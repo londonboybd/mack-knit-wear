@@ -1,20 +1,24 @@
 import { WebsitePreview } from "@/components/website-preview";
-import { publicRecords } from "@/lib/content";
+import { adminRecords } from "@/lib/content";
+
 export default async function Preview() {
-  const records = await publicRecords();
-  return (
-    <WebsitePreview
-      pages={records
-        .filter((r) => r.kind === "page" || r.kind === "brand")
-        .map((r) => ({
-          title: r.published!.title,
-          path:
-            r.kind === "brand"
-              ? `/brands/${r.slug}`
-              : r.slug === "home"
-                ? "/"
-                : `/${r.slug}`,
-        }))}
-    />
-  );
+  const records = await adminRecords();
+
+  const previewPages = records
+    .filter((r) => ["page", "brand", "product"].includes(r.kind))
+    .map((r) => {
+      let path = `/${r.slug}`;
+      if (r.kind === "brand") path = `/brands/${r.slug}`;
+      else if (r.kind === "product") path = `/products/${r.slug}`;
+      else if (r.slug === "home") path = "/";
+
+      const title = (r.published || r.draft).title;
+      return {
+        title: `${title} (${r.kind})`,
+        path,
+        isDraft: !r.published,
+      };
+    });
+
+  return <WebsitePreview pages={previewPages} />;
 }

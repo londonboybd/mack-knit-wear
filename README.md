@@ -17,36 +17,40 @@ The open preview workspace is automatically disabled on Vercel. There is no defa
 
 ## Included public views
 
-| Route            | Purpose                                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------ |
-| `/`              | Homepage with editable hero, copy, image, feature strip, section order, visibility, and contact banner |
-| `/about`         | Company introduction and story                                                                         |
-| `/products`      | Product categories and services                                                                        |
-| `/brands`        | Owned-brand portfolio                                                                                  |
-| `/brands/[slug]` | Brand story, external official website, external ecommerce store, and inquiry link                     |
-| `/network`       | Represented brands, clients, sister concerns, and business partners, labelled by relationship          |
-| `/contact`       | Validated business inquiry form                                                                        |
-| `/privacy`       | Editable privacy notice                                                                                |
+| Route              | Purpose                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| `/`                | Dynamic editorial homepage with unconstrained brand showcase, product carousel, and customizable sections |
+| `/about`           | Company story, milestone timeline, and verified manufacturing facts                                    |
+| `/products`        | Searchable, filterable product catalog synchronized with URL query params and pagination               |
+| `/products/[slug]` | Product detail view with structured specifications list, photo gallery, lightbox, and inquiry CTA      |
+| `/brands`          | Owned-brand portfolio directory with category filtering and editorial introductions                    |
+| `/brands/[slug]`   | Brand profile with separate logo/hero imagery, lookbook gallery, and dedicated product carousel        |
+| `/capabilities`    | Manufacturing technology, machinery gauges, process step workflow, and sourcing capabilities           |
+| `/network`         | Grouped partner directory: represented brands, private-label clients, sister concerns, and partners     |
+| `/contact`         | Dynamic multi-type inquiry form (Wholesale, Sourcing, Sampling, Factory visit, General) with pre-fill  |
+| `/privacy`         | Editable compliance and data governance policy                                                         |
 
-Brand links open only when a valid HTTPS destination is saved. If official website and store are the same URL, a single combined button appears. Empty external links are hidden. The first brand is an explicitly illustrative concept; replace it with approved information.
+Brand links open only when a valid HTTPS destination is saved. If official website and store are the same URL, a single combined button appears. Empty external links are hidden.
 
 ## Included administrator views
 
-| Route               | Purpose                                                                 |
-| ------------------- | ----------------------------------------------------------------------- |
-| `/admin/login`      | Supabase email/password sign-in for approved administrators             |
-| `/admin`            | Content overview and setup checklist                                    |
-| `/admin/preview`    | Published website preview at desktop and mobile widths                  |
-| `/admin/pages`      | Core page editing                                                       |
-| `/admin/brands`     | Add and edit owned brands                                               |
-| `/admin/network`    | Add and edit business relationships                                     |
-| `/admin/products`   | Add and edit product categories / services                              |
-| `/admin/media`      | Upload images and copy reusable URLs                                    |
-| `/admin/inquiries`  | Read inquiries and mark new, read, or closed; open email replies        |
-| `/admin/settings`   | Company name, logo, contact details, footer, and social links           |
-| `/api/admin/export` | Authenticated JSON export of all content drafts and published snapshots |
+| Route               | Purpose                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| `/admin/login`      | Supabase email/password sign-in for approved administrators                           |
+| `/admin`            | Content overview, quick stats, and launch checklist                                   |
+| `/admin/preview`    | Interactive multi-device preview (Desktop 1440px, Tablet 768px, Mobile 390px)         |
+| `/admin/pages`      | Reusable section editor with 10 page archetypes, reordering, duplicate, and templates |
+| `/admin/brands`     | Brand storytelling manager with separate logo, hero, lookbook, and product spotlight  |
+| `/admin/products`   | Technical product specifications editor, category manager, and lookbook gallery      |
+| `/admin/collections`| Seasonal brand collections manager with ordered product associations                  |
+| `/admin/capabilities`| Process step workflow and machinery gauge capabilities manager                       |
+| `/admin/network`    | Business relationships classified by partnership type                                 |
+| `/admin/media`      | Visual asset library with alt text enforcement, usage tracking, and safe deletion    |
+| `/admin/inquiries`  | Filterable inquiry inbox with status workflow, internal notes, and notification retry |
+| `/admin/settings`   | Company profile, multi-facility locations manager, and dynamic header/footer menus    |
+| `/api/admin/export` | Authenticated JSON export of all content drafts and published snapshots               |
 
-Content editors provide **Save draft**, **Preview**, **Publish**, **Unpublish**, image upload, alternative text, search metadata, and previous-version recovery. Homepage sections can be hidden or reordered; product and brand cards have display-order controls. New page layouts still require code changes; this is a structured CMS, not an unrestricted visual page builder.
+Content editors provide **Save draft**, **Interactive preview**, **Publish**, **Unpublish**, visual media library picker, alternative text enforcement, structured SEO metadata, and previous-version recovery. All 14 section types can be hidden, duplicated, and reordered.
 
 ## Connect the backend
 
@@ -74,10 +78,13 @@ Only an approved administrator can read private records or mutate content. Creat
 | `SUPABASE_SERVICE_ROLE_KEY`            | Server-only service-role key for inquiry submission and initial seeding                        |
 | `NEXT_PUBLIC_SITE_URL`                 | Exact site origin, e.g. `https://your-domain.com`; used for origin validation and sitemap URLs |
 | `INQUIRY_HASH_SECRET`                  | Server-only random secret for hashing inquiry rate-limit identifiers                           |
+| `NOTIFICATION_EMAIL_TO`                | Optional recipient inbox for incoming inquiry notifications (e.g. `desk@mackknitwear.com`)   |
+| `NOTIFICATION_EMAIL_FROM`              | Optional verified sender address (e.g. `Mack Knit Wear <notifications@mackknitwear.com>`)    |
+| `RESEND_API_KEY`                       | Optional transactional email provider API key for live staff notifications                    |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`       | Optional Cloudflare Turnstile site key                                                         |
 | `TURNSTILE_SECRET_KEY`                 | Optional paired server-only Turnstile secret                                                   |
 
-Never prefix the service-role key, inquiry secret, or Turnstile secret with `NEXT_PUBLIC_`. If Turnstile is enabled, configure both keys and register your real site hostname with Cloudflare.
+Never prefix the service-role key, inquiry secret, email keys, or Turnstile secret with `NEXT_PUBLIC_`. If Turnstile is enabled, configure both keys and register your real site hostname with Cloudflare.
 
 ## Deploy to Vercel
 
@@ -96,27 +103,32 @@ Never prefix the service-role key, inquiry secret, or Turnstile secret with `NEX
 - The server validates incoming data with Zod and verifies administrator identity with Supabase Auth on every protected operation.
 - PostgreSQL row-level security provides a second authorization boundary.
 - A content record has two JSON snapshots: `draft` and `published`. A draft save never alters the published snapshot. Unpublishing clears only the public snapshot.
-- The `public_content` view exposes an explicit list of public columns and only rows with a published snapshot. It intentionally runs with owner privileges to read the underlying protected table. **All mutation privileges on that view are revoked**, and no draft column is exposed. Do not broaden its projection or grants without reviewing the access implications.
+- The `public_content` view exposes an explicit list of public columns and only rows with a published snapshot. It intentionally runs with owner privileges to read the underlying protected table. **All mutation privileges on that view are revoked**, and no draft column is exposed.
 - Every update saves the old draft to `content_history`. The editor lists the latest 20 revisions. Restoring a revision loads it into the editor; it must be saved or published explicitly.
-- An `updated_at` concurrency check prevents one editor session from silently overwriting another session's changes.
-- Inquiries are stored in the dashboard. Replies open the administrator's mail application; no transactional email notification service is configured.
-- The inquiry endpoint validates content, includes a honeypot, and enforces five accepted inquiries per hour per hashed IP identifier in PostgreSQL. The rate limiter uses Vercel's trusted forwarded-IP header. Optional Turnstile adds bot protection. The local-development rate limit shares one identifier.
-- Images are public website assets. Uploads accept verified JPG, PNG, or WebP content under 3 MB, below the platform's request-size ceiling. Do not upload private company files. Media removal from a page is supported; physical file deletion is deliberately not exposed in this first version.
+- An `updated_at` concurrency check prevents one editor session from silently overwriting another session's changes (409 Conflict).
+- Inquiries are stored durably in PostgreSQL with client & server idempotency and unique reference codes (`INQ-YYYYMMDD-XXXXXX`). Staff notifications use the configurable email adapter with automatic failure tracking and admin retry.
+- The inquiry endpoint validates content, includes a honeypot, and enforces five accepted inquiries per hour per hashed IP identifier in PostgreSQL. Optional Cloudflare Turnstile adds bot protection.
+- Visual media assets are tracked across drafts and published content. Deletion is protected: an asset currently referenced by any page, brand, or product cannot be deleted until unlinked.
 
 ## Project layout
 
 ```text
 app/
-  (public)/             Public pages and shared site layout
-  admin/(protected)/    Server-gated content studio
+  (public)/             Public pages (home, about, brands, products, capabilities, network, contact, privacy)
+  admin/(protected)/    Server-gated content studio (pages, brands, products, collections, media, inbox)
   admin/login/          Administrator sign-in
-  api/                  Next.js backend routes
-components/             Public and admin React interfaces
-lib/                    Content types, validation, authentication, database helpers
-supabase/schema.sql     PostgreSQL schema, policies, functions, and storage policies
-scripts/seed.ts         Safe starter-draft creation
-tests/security.test.ts  URL validation and database authorization tests
-public/images/          Illustrative textile photograph
+  api/                  Next.js backend routes (admin mutations, usage checks, inquiry submission, email retry)
+components/             Editorial UI components, section renderer, product carousel, lightbox, and editors
+lib/                    Typed schemas (Zod), normalization, email adapter, authentication, database client
+supabase/migrations/    Incremental idempotent database migrations
+supabase/schema.sql     Consolidated PostgreSQL schema, policies, functions, and storage policies
+scripts/seed.ts         Comprehensive starter-draft creation
+tests/                  Automated test suites:
+  acceptance.test.ts    Scenarios A through R (24 automated assertions with PGlite)
+  migration.test.ts     Legacy schema survival, idempotency, and reference backfilling
+  security.test.ts      URL sanitization, RLS boundary, and authorization protection
+  api.test.ts           Unconfigured preview security checks
+public/images/          Corporate textile imagery assets
 ```
 
 ## Verification and practical limits

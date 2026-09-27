@@ -25,6 +25,7 @@ export default async function Section({
         kind="settings"
         section="settings"
         demo={demo}
+        allRecords={records}
       />
     );
   }
