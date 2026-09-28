@@ -1,12 +1,17 @@
+import React from "react";
 import Link from "next/link";
-import { ArrowUpRight, ArrowRight, Layers, MoveUpRight } from "lucide-react";
+import { ArrowUpRight, ArrowRight, Layers, MoveUpRight, MapPin, Clock, Phone, Mail } from "lucide-react";
 import {
   relationshipLabels,
   type RecordItem,
   type Content,
+  type RelationshipType,
 } from "@/lib/schema";
 import { ContactForm } from "./contact-form";
+import { SectionRenderer } from "./section-renderer";
+
 export function Prose({ text }: { text: string }) {
+  if (!text) return null;
   return (
     <div className="prose">
       {text
@@ -18,17 +23,18 @@ export function Prose({ text }: { text: string }) {
     </div>
   );
 }
+
 export function BrandCard({ record }: { record: RecordItem }) {
-  const c = record.published!;
+  const c = record.published || record.draft;
   return (
     <Link href={`/brands/${record.slug}`} className="brand-card">
       <div className="card-photo">
         {c.image ? (
-          <img src={c.image} alt={c.imageAlt} />
+          <img src={c.image} alt={c.imageAlt || c.title} loading="lazy" />
         ) : (
           <Layers size={64} />
         )}
-        <span className="round-link">
+        <span className="round-link" aria-hidden="true">
           <ArrowUpRight />
         </span>
       </div>
@@ -41,6 +47,7 @@ export function BrandCard({ record }: { record: RecordItem }) {
     </Link>
   );
 }
+
 export function PageIntro({ content }: { content: Content }) {
   return (
     <section className="page-intro">
@@ -53,6 +60,7 @@ export function PageIntro({ content }: { content: Content }) {
     </section>
   );
 }
+
 export function Home({
   page,
   records,
@@ -60,14 +68,30 @@ export function Home({
   page: Content;
   records: RecordItem[];
 }) {
+  // If modern sections are defined, render using SectionRenderer
+  if (page.sections && page.sections.length > 0) {
+    return (
+      <div className="home-canvas">
+        <SectionRenderer
+          sections={page.sections}
+          allRecords={records}
+          previewMode={false}
+        />
+      </div>
+    );
+  }
+
+  // Fallback rendering for unmigrated legacy homepage content
   const brands = records
     .filter((r) => r.kind === "brand" && r.published)
     .sort((a, b) => a.published!.order - b.published!.order);
   const featured = brands.filter((r) => r.published!.featured);
-  const selected = (featured.length ? featured : brands).slice(0, 2);
+  // Removed hardcoded 2-brand limit
+  const selected = featured.length ? featured : brands;
   const about = records.find(
     (r) => r.kind === "page" && r.slug === "about",
   )?.published;
+
   return (
     <>
       <section className="hero">
@@ -99,15 +123,19 @@ export function Home({
           <span className="photo-label">{page.photoLabel}</span>
         </div>
       </section>
-      <div className="ticker">
-        {page.ticker
-          .split(",")
-          .filter(Boolean)
-          .map((item, i) => (
-            <span key={i}>{item.trim()}</span>
-          ))}
-        <MoveUpRight size={22} />
-      </div>
+
+      {page.ticker && (
+        <div className="ticker">
+          {page.ticker
+            .split(",")
+            .filter(Boolean)
+            .map((item, i) => (
+              <span key={i}>{item.trim()}</span>
+            ))}
+          <MoveUpRight size={22} />
+        </div>
+      )}
+
       {page.homeSections.map((section) =>
         section === "about" && about ? (
           <section key="about" className="section about-strip">
@@ -134,9 +162,7 @@ export function Home({
                 Explore all brands <ArrowUpRight size={18} />
               </Link>
             </div>
-            <div
-              className={`brand-grid ${selected.length === 1 ? "single" : ""}`}
-            >
+            <div className="brand-grid">
               {selected.map((r) => (
                 <BrandCard key={r.id} record={r} />
               ))}
@@ -157,12 +183,16 @@ export function Home({
     </>
   );
 }
+
 export function ContentPage({
   page,
   records,
   settings,
   slug,
   brand = "",
+  product = "",
+  sku = "",
+  inquiryType = "",
   demo = false,
 }: {
   page: Content;
@@ -170,107 +200,295 @@ export function ContentPage({
   settings: Content;
   slug: string;
   brand?: string;
+  product?: string;
+  sku?: string;
+  inquiryType?: string;
   demo?: boolean;
 }) {
-  const collection =
-    slug === "brands"
-      ? "brand"
-      : slug === "network"
-        ? "network"
-        : slug === "products"
-          ? "product"
-          : null;
-  const entries = records
-    .filter((r) => r.kind === collection && r.published)
-    .sort((a, b) => a.published!.order - b.published!.order);
-  return (
-    <>
-      <PageIntro content={page} />
-      {slug === "contact" ? (
+  // If page has modular sections configured (e.g. customized About or Capabilities)
+  if (page.sections && page.sections.length > 0 && slug !== "contact") {
+    return (
+      <div className="custom-page-canvas">
+        <PageIntro content={page} />
+        <SectionRenderer
+          sections={page.sections}
+          allRecords={records}
+          settings={settings}
+          previewMode={false}
+        />
+      </div>
+    );
+  }
+
+  // Dedicated Contact Page Layout
+  if (slug === "contact") {
+    const locations = settings.locations && settings.locations.length > 0
+      ? settings.locations
+      : [];
+
+    return (
+      <>
+        <PageIntro content={page} />
         <section className="section contact-layout">
-          <div>
+          <div className="contact-info-column">
             <Prose text={page.body} />
+
+            {/* Direct Contact Details */}
             <div className="contact-details">
               {settings.email && (
-                <>
-                  <span className="eyebrow">EMAIL</span>
+                <div className="contact-detail-item">
+                  <span className="eyebrow">EMAIL INQUIRIES</span>
                   <a href={`mailto:${settings.email}`}>{settings.email}</a>
-                </>
+                </div>
               )}
               {settings.phone && (
-                <>
-                  <span className="eyebrow">PHONE</span>
+                <div className="contact-detail-item">
+                  <span className="eyebrow">TELEPHONE</span>
                   <a href={`tel:${settings.phone.replace(/[^+\d]/g, "")}`}>
                     {settings.phone}
                   </a>
-                </>
+                </div>
               )}
-              {settings.address && (
-                <>
-                  <span className="eyebrow">ADDRESS</span>
-                  <p>{settings.address}</p>
-                </>
+              {settings.responsePromise && (
+                <div className="contact-detail-item">
+                  <span className="eyebrow">COMMERCIAL ASSURANCE</span>
+                  <p className="response-promise">{settings.responsePromise}</p>
+                </div>
               )}
             </div>
+
+            {/* Multiple Locations */}
+            {locations.length > 0 && (
+              <div className="locations-column-wrap">
+                <span className="eyebrow">OFFICES & FACILITIES</span>
+                <div className="locations-compact-list">
+                  {locations.map((loc) => (
+                    <article className="location-compact-card" key={loc.id}>
+                      <h4>
+                        {loc.name} {loc.isHeadquarters && <span className="hq-tag">(HQ)</span>}
+                      </h4>
+                      <p className="loc-text">{loc.address}</p>
+                      {loc.hours && <small className="loc-hours"><Clock size={12} /> {loc.hours}</small>}
+                      {loc.directionsUrl && (
+                        <a href={loc.directionsUrl} target="_blank" rel="noopener noreferrer" className="directions-link">
+                          Directions ↗
+                        </a>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-          <ContactForm brand={brand} demo={demo} />
+
+          <div className="contact-form-column">
+            <ContactForm
+              brand={brand}
+              initialProduct={product}
+              initialSku={sku}
+              initialType={inquiryType}
+              demo={demo}
+            />
+          </div>
         </section>
-      ) : (
-        <section className="section content-section">
+      </>
+    );
+  }
+
+  // Dedicated Network Page Layout (Grouped by Relationship)
+  if (slug === "network") {
+    const networkRecords = records.filter(
+      (r) => r.kind === "network" && r.published,
+    );
+
+    const groups: Array<{ key: RelationshipType; title: string; items: RecordItem[] }> = [
+      { key: "represented", title: "Represented Brands", items: [] },
+      { key: "client", title: "Client & Supply Relationships", items: [] },
+      { key: "sister", title: "Sister Concerns", items: [] },
+      { key: "partner", title: "Business Partners", items: [] },
+    ];
+
+    networkRecords.forEach((r) => {
+      const rel = r.published!.relationship;
+      const g = groups.find((grp) => grp.key === rel);
+      if (g) g.items.push(r);
+    });
+
+    return (
+      <>
+        <PageIntro content={page} />
+        <section className="section network-section">
           <Prose text={page.body} />
-          {slug === "about" && page.image && (
-            <img className="wide-photo" src={page.image} alt={page.imageAlt} />
-          )}
-          {collection && (
-            <div className="collection-grid">
-              {entries.map((r) =>
-                collection === "brand" ? (
-                  <BrandCard key={r.id} record={r} />
-                ) : (
-                  <article className="info-card" key={r.id}>
-                    {r.published!.image && (
-                      <img
-                        src={r.published!.image}
-                        alt={r.published!.imageAlt}
-                      />
-                    )}
-                    <span className="eyebrow">
-                      {collection === "network"
-                        ? relationshipLabels[r.published!.relationship]
-                        : r.published!.category}
-                    </span>
-                    <h3>{r.published!.title}</h3>
-                    <p>{r.published!.summary}</p>
-                    <Prose text={r.published!.body} />
-                    {r.published!.website && (
-                      <a
-                        href={r.published!.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-link"
-                      >
-                        Visit website <ArrowUpRight size={16} />
-                      </a>
-                    )}
-                  </article>
-                ),
-              )}
-            </div>
-          )}
-          {collection && entries.length === 0 && (
+
+          {networkRecords.length === 0 ? (
             <div className="empty-public">
               <Layers size={28} />
-              <p>More information will be shared here soon.</p>
+              <p>Confirmed business relationships will be published here.</p>
               <Link className="text-link" href="/contact">
                 Contact us <ArrowUpRight size={16} />
               </Link>
             </div>
+          ) : (
+            <div className="network-groups-flow">
+              {groups
+                .filter((g) => g.items.length > 0)
+                .map((group) => (
+                  <div className="network-group-block" key={group.key}>
+                    <div className="network-group-heading">
+                      <span className="eyebrow">{group.title.toUpperCase()}</span>
+                      <h2>{group.title}</h2>
+                    </div>
+                    <div className="collection-grid">
+                      {group.items.map((r) => {
+                        const c = r.published!;
+                        return (
+                          <article className="info-card network-card" key={r.id}>
+                            {c.image && (
+                              <img src={c.image} alt={c.imageAlt || c.title} loading="lazy" />
+                            )}
+                            <span className="eyebrow">{c.category || relationshipLabels[c.relationship]}</span>
+                            <h3>{c.title}</h3>
+                            <p>{c.summary}</p>
+                            <Prose text={c.body} />
+                            {c.website && (
+                              <a
+                                href={c.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-link"
+                              >
+                                Visit website <ArrowUpRight size={16} />
+                              </a>
+                            )}
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+            </div>
           )}
         </section>
-      )}
+      </>
+    );
+  }
+
+  // Dedicated Capabilities Page Layout
+  if (slug === "capabilities") {
+    const capabilities = records
+      .filter((r) => r.kind === "capability" && r.published)
+      .sort((a, b) => a.published!.order - b.published!.order);
+
+    return (
+      <>
+        <PageIntro content={page} />
+        <section className="section capabilities-section">
+          <Prose text={page.body} />
+
+          {capabilities.length > 0 && (
+            <div className="capabilities-entries-list">
+              {capabilities.map((cap) => {
+                const c = cap.published!;
+                return (
+                  <article className="capability-entry-card" key={cap.id}>
+                    <div className="capability-card-grid">
+                      <div className="capability-copy">
+                        <span className="eyebrow">{c.category || "CAPABILITY"}</span>
+                        <h2>{c.title}</h2>
+                        <p className="large-copy">{c.summary}</p>
+                        <Prose text={c.body} />
+
+                        {c.processSteps && c.processSteps.length > 0 && (
+                          <div className="capability-process-steps">
+                            <h4>Standard Process Flow</h4>
+                            <div className="steps-flow">
+                              {c.processSteps.map((st) => (
+                                <div className="step-point" key={st.stepNumber}>
+                                  <span className="step-num">{st.stepNumber}</span>
+                                  <div>
+                                    <strong>{st.title}</strong>
+                                    <p>{st.description}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {c.outputs && c.outputs.length > 0 && (
+                          <div className="capability-outputs-chips">
+                            <h4>Key Production Outputs</h4>
+                            <div className="chips-row">
+                              {c.outputs.map((out, i) => (
+                                <span className="output-chip" key={i}>
+                                  {out}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {c.ctaLabel && (
+                          <Link href={c.ctaHref || "/contact"} className="button dark small">
+                            {c.ctaLabel} <ArrowUpRight size={16} />
+                          </Link>
+                        )}
+                      </div>
+
+                      {c.image && (
+                        <div className="capability-visual">
+                          <img src={c.image} alt={c.imageAlt || c.title} loading="lazy" />
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </>
+    );
+  }
+
+  // Dedicated Privacy Policy Page Layout
+  if (slug === "privacy") {
+    return (
+      <>
+        <PageIntro content={page} />
+        <section className="section privacy-content-section">
+          <div className="editorial-container">
+            <div className="privacy-header-meta">
+              <span className="eyebrow">Mack Knit Wear Data Governance</span>
+              <p className="muted">
+                Last reviewed: {new Date(page.seoTitle ? page.seoTitle : Date.now()).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </p>
+            </div>
+            <Prose text={page.body} />
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  // General Editorial Page Layout
+  return (
+    <>
+      <PageIntro content={page} />
+      <section className="section content-section">
+        <Prose text={page.body} />
+        {page.image && (
+          <img className="wide-photo" src={page.image} alt={page.imageAlt} />
+        )}
+      </section>
     </>
   );
 }
+
 export function BrandPage({ content }: { content: Content }) {
   return (
     <>
