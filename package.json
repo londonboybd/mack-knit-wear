@@ -7,13 +7,11 @@
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
-    "test": "node --conditions=react-server --import tsx --test tests/*.test.ts",
-    "seed": "node --import tsx scripts/seed.ts"
+    "test": "node --conditions=react-server --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.99.0",
     "lucide-react": "^0.577.0",
+    "motion": "^13.4.6",
     "next": "^16.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -21,7 +19,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.8",
     "@next/env": "^16.3.5",
     "@types/node": "^22.19.0",
     "@types/react": "^19.2.0",

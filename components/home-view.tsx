@@ -8,7 +8,14 @@ import {
   londonBoyBrand,
   associatesList,
 } from "@/lib/data/site-data";
-import { Reveal, StaggerGroup, ImageReveal, InteractiveLink } from "./motion";
+import {
+  SectionReveal,
+  HeroEntrance,
+  StaggerGroup,
+  ImageReveal,
+  BoundedParallax,
+  InteractiveLink,
+} from "./motion";
 
 export function HomeView() {
   return (
@@ -17,35 +24,37 @@ export function HomeView() {
       <section className="home-hero-section" aria-label="Introduction">
         <div className="home-hero-container">
           <div className="home-hero-left">
-            <Reveal delay={50} direction="up" distance={16}>
+            {/* Secondary eyebrow entrance */}
+            <HeroEntrance delay={60} distance={12}>
               <span className="hero-eyebrow">MACK KNIT WEAR · DHAKA</span>
-            </Reveal>
+            </HeroEntrance>
 
-            <Reveal delay={120} direction="up" distance={20}>
-              <h1 className="home-hero-headline">
-                Everyday essentials.
-                <br />
-                <span className="serif-accent">A distinct point of view.</span>
-              </h1>
-            </Reveal>
+            {/* Main heading is available immediately without delay or layout shift */}
+            <h1 className="home-hero-headline">
+              Everyday essentials.
+              <br />
+              <span className="serif-accent">A distinct point of view.</span>
+            </h1>
 
-            <Reveal delay={200} direction="up" distance={16}>
+            {/* Secondary subhead entrance */}
+            <HeroEntrance delay={140} distance={14}>
               <p className="home-hero-subhead">
                 A composed textile portfolio with a distinct consumer-brand
                 experience inside it. Engineered in Dhaka for international
                 distribution.
               </p>
-            </Reveal>
+            </HeroEntrance>
 
-            <Reveal delay={280} direction="up" distance={16}>
-              <div className="home-hero-actions">
-                <Link
-                  href="/brands/londonboy"
-                  className="button primary-dark"
-                  aria-label="Explore londonBoy brand"
-                >
-                  Explore londonBoy <ArrowUpRight size={16} />
-                </Link>
+            {/* Actions: Primary is immediate; secondary entrance is restrained */}
+            <div className="home-hero-actions">
+              <Link
+                href="/brands/londonboy"
+                className="button primary-dark"
+                aria-label="Explore londonBoy brand"
+              >
+                Explore londonBoy <ArrowUpRight size={16} />
+              </Link>
+              <HeroEntrance delay={200} distance={10}>
                 <a
                   href="#mack-intro"
                   className="button secondary-quiet"
@@ -53,25 +62,29 @@ export function HomeView() {
                 >
                   Meet Mack Knit Wear
                 </a>
-              </div>
-            </Reveal>
+              </HeroEntrance>
+            </div>
           </div>
 
           <div className="home-hero-right">
-            <Reveal delay={200} direction="none">
-              <div className="hero-image-frame">
+            <div className="hero-image-frame">
+              {/* Subtle scroll-linked movement strictly bounded within the image frame */}
+              <BoundedParallax offset={14}>
                 <ImageReveal
                   src={homeContent.heroImage}
                   alt={homeContent.heroImageAlt}
                   aspectRatio="16/10"
+                  priority={true}
                   className="hero-main-photo"
                 />
+              </BoundedParallax>
+              <HeroEntrance delay={240} distance={8}>
                 <div className="hero-image-caption">
                   <span>Tactile Knitwear & Cotton Essentials</span>
                   <span className="caption-tag">Dhaka Studio</span>
                 </div>
-              </div>
-            </Reveal>
+              </HeroEntrance>
+            </div>
           </div>
         </div>
       </section>
@@ -83,28 +96,28 @@ export function HomeView() {
         aria-labelledby="mack-intro-heading"
       >
         <div className="section-container">
-          <Reveal delay={50}>
+          <SectionReveal delay={40}>
             <div className="section-eyebrow">
               <span className="eyebrow-line" />
               <span>{homeContent.mackIntro.eyebrow}</span>
             </div>
-          </Reveal>
+          </SectionReveal>
 
           <div className="mack-intro-grid">
-            <Reveal delay={100} className="intro-title-col">
+            <SectionReveal delay={80} className="intro-title-col">
               <h2 id="mack-intro-heading" className="editorial-heading">
                 {homeContent.mackIntro.heading}
               </h2>
-            </Reveal>
+            </SectionReveal>
 
-            <Reveal delay={180} className="intro-text-col">
+            <SectionReveal delay={140} className="intro-text-col">
               <p className="lead-paragraph">{homeContent.mackIntro.body}</p>
               <div className="intro-link-wrap">
                 <InteractiveLink href="/about" className="link-subtle">
                   Read the company journal
                 </InteractiveLink>
               </div>
-            </Reveal>
+            </SectionReveal>
           </div>
         </div>
       </section>
@@ -115,66 +128,68 @@ export function HomeView() {
         aria-labelledby="londonboy-feature-title"
       >
         <div className="section-container">
-          <div className="londonboy-feature-card">
-            <div className="lb-feature-header">
-              <div>
-                <span className="lb-eyebrow">
-                  {homeContent.londonBoyFeature.eyebrow}
-                </span>
-                <h2 id="londonboy-feature-title" className="lb-display-title">
-                  {homeContent.londonBoyFeature.name}
-                </h2>
+          <SectionReveal delay={40}>
+            <div className="londonboy-feature-card">
+              <div className="lb-feature-header">
+                <div>
+                  <span className="lb-eyebrow">
+                    {homeContent.londonBoyFeature.eyebrow}
+                  </span>
+                  <h2 id="londonboy-feature-title" className="lb-display-title">
+                    {homeContent.londonBoyFeature.name}
+                  </h2>
+                </div>
+                <p className="lb-tagline">
+                  {homeContent.londonBoyFeature.tagline}
+                </p>
               </div>
-              <p className="lb-tagline">
-                {homeContent.londonBoyFeature.tagline}
-              </p>
-            </div>
 
-            <div className="lb-feature-body">
-              <p>{homeContent.londonBoyFeature.description}</p>
-              <div className="lb-action-wrap">
-                <Link
-                  href="/brands/londonboy"
-                  className="button lb-action-btn"
-                  aria-label="Enter londonBoy brand experience"
-                >
-                  Enter londonBoy <ArrowRight size={16} />
-                </Link>
+              <div className="lb-feature-body">
+                <p>{homeContent.londonBoyFeature.description}</p>
+                <div className="lb-action-wrap">
+                  <Link
+                    href="/brands/londonboy"
+                    className="button lb-action-btn"
+                    aria-label="Enter londonBoy brand experience"
+                  >
+                    Enter londonBoy <ArrowRight size={16} />
+                  </Link>
+                </div>
               </div>
-            </div>
 
-            {/* Deliberate Category Entrances: Socks & Innerwear */}
-            <div className="lb-categories-grid">
-              {homeContent.londonBoyFeature.categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={cat.href}
-                  className={`lb-category-card lb-category-${cat.id}`}
-                  aria-label={`Explore ${cat.name} category`}
-                >
-                  <div className="category-photo-wrapper">
-                    <img
-                      src={cat.image}
-                      alt={cat.imageAlt}
-                      loading="lazy"
-                      className="category-photo"
-                    />
-                    <span className="category-badge">Category Entrance</span>
-                  </div>
-                  <div className="category-card-content">
-                    <div className="category-title-row">
-                      <h3 className="category-name">{cat.name}</h3>
-                      <span className="category-arrow" aria-hidden="true">
-                        <ArrowUpRight size={18} />
-                      </span>
+              {/* Deliberate Category Entrances: Socks & Innerwear as coordinated sequence */}
+              <StaggerGroup staggerInterval={80} className="lb-categories-grid">
+                {homeContent.londonBoyFeature.categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={cat.href}
+                    className={`lb-category-card lb-category-${cat.id}`}
+                    aria-label={`Explore ${cat.name} category`}
+                  >
+                    <div className="category-photo-wrapper">
+                      <ImageReveal
+                        src={cat.image}
+                        alt={cat.imageAlt}
+                        aspectRatio="16/10"
+                        className="category-photo"
+                      />
+                      <span className="category-badge">Category Entrance</span>
                     </div>
-                    <p className="category-tagline">{cat.tagline}</p>
-                    <p className="category-desc">{cat.description}</p>
-                  </div>
-                </Link>
-              ))}
+                    <div className="category-card-content">
+                      <div className="category-title-row">
+                        <h3 className="category-name">{cat.name}</h3>
+                        <span className="category-arrow" aria-hidden="true">
+                          <ArrowUpRight size={18} />
+                        </span>
+                      </div>
+                      <p className="category-tagline">{cat.tagline}</p>
+                      <p className="category-desc">{cat.description}</p>
+                    </div>
+                  </Link>
+                ))}
+              </StaggerGroup>
             </div>
-          </div>
+          </SectionReveal>
         </div>
       </section>
 
@@ -184,22 +199,25 @@ export function HomeView() {
         aria-labelledby="associates-preview-title"
       >
         <div className="section-container">
-          <div className="preview-header-row">
-            <div>
-              <div className="section-eyebrow">
-                <span className="eyebrow-line" />
-                <span>{homeContent.associatesPreview.eyebrow}</span>
+          <SectionReveal delay={40}>
+            <div className="preview-header-row">
+              <div>
+                <div className="section-eyebrow">
+                  <span className="eyebrow-line" />
+                  <span>{homeContent.associatesPreview.eyebrow}</span>
+                </div>
+                <h2 id="associates-preview-title" className="editorial-heading">
+                  {homeContent.associatesPreview.heading}
+                </h2>
               </div>
-              <h2 id="associates-preview-title" className="editorial-heading">
-                {homeContent.associatesPreview.heading}
-              </h2>
+              <p className="preview-header-desc">
+                {homeContent.associatesPreview.description}
+              </p>
             </div>
-            <p className="preview-header-desc">
-              {homeContent.associatesPreview.description}
-            </p>
-          </div>
+          </SectionReveal>
 
-          <div className="associates-preview-grid">
+          {/* Reveal associate preview cards as a small coordinated group */}
+          <StaggerGroup staggerInterval={70} className="associates-preview-grid">
             {associatesList.map((assoc) => (
               <div key={assoc.number} className="associate-preview-item">
                 <div className="assoc-num">{assoc.number}</div>
@@ -210,47 +228,51 @@ export function HomeView() {
                 </div>
               </div>
             ))}
-          </div>
+          </StaggerGroup>
 
-          <div className="preview-cta-wrap">
-            <InteractiveLink
-              href={homeContent.associatesPreview.cta.href}
-              className="link-subtle"
-            >
-              {homeContent.associatesPreview.cta.label}
-            </InteractiveLink>
-          </div>
+          <SectionReveal delay={120}>
+            <div className="preview-cta-wrap">
+              <InteractiveLink
+                href={homeContent.associatesPreview.cta.href}
+                className="link-subtle"
+              >
+                {homeContent.associatesPreview.cta.label}
+              </InteractiveLink>
+            </div>
+          </SectionReveal>
         </div>
       </section>
 
-      {/* 5. Concise Contact Invitation */}
+      {/* 5. Concise Contact Invitation: Calm & Grounded */}
       <section
         className="home-contact-section"
         aria-labelledby="home-contact-title"
       >
         <div className="section-container">
-          <div className="home-contact-card">
-            <div>
-              <div className="section-eyebrow">
-                <span className="eyebrow-line" />
-                <span>{homeContent.contactPrompt.eyebrow}</span>
+          <SectionReveal delay={40}>
+            <div className="home-contact-card">
+              <div>
+                <div className="section-eyebrow">
+                  <span className="eyebrow-line" />
+                  <span>{homeContent.contactPrompt.eyebrow}</span>
+                </div>
+                <h2 id="home-contact-title" className="editorial-heading">
+                  {homeContent.contactPrompt.heading}
+                </h2>
+                <p className="home-contact-desc">
+                  {homeContent.contactPrompt.body}
+                </p>
               </div>
-              <h2 id="home-contact-title" className="editorial-heading">
-                {homeContent.contactPrompt.heading}
-              </h2>
-              <p className="home-contact-desc">
-                {homeContent.contactPrompt.body}
-              </p>
+              <div className="home-contact-action">
+                <Link
+                  href={homeContent.contactPrompt.cta.href}
+                  className="button primary-dark"
+                >
+                  {homeContent.contactPrompt.cta.label} <ArrowUpRight size={16} />
+                </Link>
+              </div>
             </div>
-            <div className="home-contact-action">
-              <Link
-                href={homeContent.contactPrompt.cta.href}
-                className="button primary-dark"
-              >
-                {homeContent.contactPrompt.cta.label} <ArrowUpRight size={16} />
-              </Link>
-            </div>
-          </div>
+          </SectionReveal>
         </div>
       </section>
     </div>

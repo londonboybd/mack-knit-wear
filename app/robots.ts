@@ -1,9 +1,14 @@
 import type { MetadataRoute } from "next";
+
 export default function robots(): MetadataRoute.Robots {
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "";
+  const sitemapUrl = base ? `${base.replace(/\/$/, "")}/sitemap.xml` : undefined;
+
   return {
-    rules: { userAgent: "*", allow: "/", disallow: ["/admin/", "/api/"] },
-    sitemap: process.env.NEXT_PUBLIC_SITE_URL
-      ? `${process.env.NEXT_PUBLIC_SITE_URL}/sitemap.xml`
-      : undefined,
+    rules: {
+      userAgent: "*",
+      allow: "/",
+    },
+    sitemap: sitemapUrl,
   };
 }

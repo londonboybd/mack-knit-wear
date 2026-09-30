@@ -1,4 +1,5 @@
-# Mack Knit Wear — Portfolio Functional Upgrade Progress
+# [SUPERSEDED] Mack Knit Wear — Portfolio Functional Upgrade Progress
+> **SUPERSEDED**: Historical progress log for the retired Supabase/admin implementation. Refer to `README.md` for current Git-backed architecture.
 
 **Status Legend:**
 - 🔴 Not started

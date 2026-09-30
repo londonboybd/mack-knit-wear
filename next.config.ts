@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+
 const config: NextConfig = {
   poweredByHeader: false,
   allowedDevOrigins: ["terminal.local"],
@@ -18,5 +19,15 @@ const config: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/network",
+        destination: "/associates",
+        permanent: true,
+      },
+    ];
+  },
 };
+
 export default config;

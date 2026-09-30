@@ -42,10 +42,15 @@
 }
 
 html {
-  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -2662,12 +2667,137 @@ select:focus-visible {
 }
 
 /* =========================================================================
-   10. MOTION PRIMITIVES & ACCESSIBILITY (REDUCED MOTION)
+   10. MOTION SYSTEM, ANCHOR OFFSETS & ACCESSIBILITY
    ========================================================================= */
-.motion-reveal {
-  /* Default state managed by JavaScript and styled progressively */
+
+/* Anchor Navigation Offsets (Accounts for Sticky Header + LondonBoy Subnav) */
+.journal-chapter-block,
+.mack-intro-section,
+.associates-preview-section,
+.home-contact-section,
+.directory-list-section,
+#main-content {
+  scroll-margin-top: 104px;
 }
 
+.londonboy-signature-page .lb-scene-section,
+.lb-scene-section {
+  scroll-margin-top: 140px;
+}
+
+/* Progressive Reveal Foundation */
+.motion-reveal {
+  /* Default state managed progressively by Motion for React */
+  will-change: transform, opacity;
+}
+
+.motion-reveal.is-revealed {
+  will-change: auto;
+}
+
+.motion-hero-entrance {
+  will-change: transform, opacity;
+}
+
+/* Bounded Parallax Container */
+.motion-parallax-container {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.motion-parallax-inner {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Image Reveal Foundation */
+.motion-image-reveal-wrapper {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--surface-secondary);
+}
+
+.motion-image-reveal-target {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Product Detail Gallery Crossfade */
+@keyframes galleryFadeIn {
+  from {
+    opacity: 0.65;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.gallery-crossfade-img {
+  animation: galleryFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* LondonBoy SOCKS Desktop Sticky Composition */
+@media (min-width: 1025px) {
+  .lb-scene-socks .scene-grid-socks {
+    align-items: start;
+  }
+
+  .lb-scene-socks .scene-visual-col {
+    position: sticky;
+    top: 108px;
+    align-self: start;
+  }
+}
+
+/* Mobile Chapter Navigation Chips (About Journal) */
+.mobile-chapter-nav {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .mobile-chapter-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 12px 0 16px;
+    margin-bottom: 24px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--line-color);
+  }
+
+  .mobile-chapter-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-chapter-chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: var(--surface-secondary);
+    border: 1px solid var(--line-color);
+    color: var(--mack-text);
+    white-space: nowrap;
+    border-radius: 2px;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .mobile-chapter-chip.active {
+    background-color: var(--mack-text);
+    color: var(--mack-bg);
+    border-color: var(--mack-text);
+  }
+}
+
+/* Strict Reduced-Motion Rules */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -2678,14 +2808,26 @@ select:focus-visible {
     scroll-behavior: auto !important;
   }
 
-  .motion-reveal {
+  .motion-reveal,
+  .motion-hero-entrance,
+  .motion-stagger-group,
+  .motion-stagger-item {
     opacity: 1 !important;
     transform: none !important;
+    will-change: auto !important;
   }
 
-  .motion-image-reveal-wrapper img {
+  .motion-image-reveal-wrapper img,
+  .motion-parallax-inner {
     opacity: 1 !important;
     transform: none !important;
+    scale: 1 !important;
+    will-change: auto !important;
+  }
+
+  .lb-scene-socks .scene-visual-col {
+    position: static !important;
+    top: auto !important;
   }
 
   .scroll-progress-bar {

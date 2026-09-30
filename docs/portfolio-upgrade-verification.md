@@ -1,4 +1,5 @@
-# Mack Knit Wear — Portfolio Upgrade Verification Protocol
+# [SUPERSEDED] Mack Knit Wear — Portfolio Upgrade Verification Protocol
+> **SUPERSEDED**: Historical test protocol for the retired Supabase/admin implementation. Refer to `tests/*.test.ts` and `README.md` for current Git-backed architecture.
 
 ## 1. Automated Acceptance Scenarios (A – R)
 

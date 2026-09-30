@@ -1,113 +1,59 @@
-/**
- * Single source of truth for all confirmed Mack Knit Wear and londonBoy content.
- * All content strictly follows confirmed facts: no fabricated timelines,
- * no fake founder stories, no imaginary brands, and no simulated filters.
- */
+import type {
+  SiteSettings,
+  Associate,
+  Product,
+  Brand,
+  HomeContent,
+  AboutContent,
+} from "./types";
 
-export interface NavItem {
-  id: string;
-  label: string;
-  href: string;
-  isExternal?: boolean;
-}
-
-export interface SiteSettings {
-  title: string;
-  tagline: string;
-  companyName: string;
-  description: string;
-  email: string;
-  phone: string;
-  address: string;
-  responseNotice: string;
-  headerNav: NavItem[];
-  footerNav: NavItem[];
-}
-
-export interface Associate {
-  number: string;
-  name: string;
-  role: string;
-  location: string;
-  description: string;
-  website?: string;
-  displayMark: string;
-}
-
-export interface ProductSpecification {
-  label: string;
-  value: string;
-}
-
-export interface Product {
-  id: string;
-  slug: string;
-  name: string;
-  brand: "londonBoy";
-  category: "Socks" | "Innerwear";
-  categorySlug: "socks" | "innerwear";
-  refCode: string;
-  summary: string;
-  description: string;
-  image: string;
-  imageAlt: string;
-  secondaryImage?: string;
-  specifications: ProductSpecification[];
-  featured?: boolean;
-}
-
-export interface AboutChapter {
-  id: string;
-  number: string;
-  title: string;
-  content: string[];
-}
+export * from "./types";
 
 export const siteSettings: SiteSettings = {
   title: "Mack Knit Wear",
-  tagline: "CONTEMPORARY TEXTILES & BRAND DEVELOPMENT",
+  tagline: "Contemporary Knitwear Portfolio & Brand Incubator",
   companyName: "Mack Knit Wear",
-  description: "A composed textile group and brand incubator based in Dhaka, Bangladesh. Engineering thoughtful knit apparel for global markets.",
+  description:
+    "A composed textile portfolio and brand incubator based in Dhaka, Bangladesh.",
   email: "inquiries@mackknitwear.com",
   phone: "+880 2 887 8100",
   address: "Dhaka, Bangladesh",
-  responseNotice: "Direct commercial inquiries are reviewed within two business days.",
   headerNav: [
-    { id: "nav-about", label: "About", href: "/about" },
-    { id: "nav-brands", label: "Brands", href: "/brands" },
-    { id: "nav-products", label: "Products", href: "/products" },
-    { id: "nav-associates", label: "Associates", href: "/associates" },
-    { id: "nav-contact", label: "Contact", href: "/contact" },
+    { id: "about", label: "About", href: "/about" },
+    { id: "brands", label: "Brands", href: "/brands" },
+    { id: "products", label: "Products", href: "/products" },
+    { id: "associates", label: "Associates", href: "/associates" },
+    { id: "contact", label: "Contact", href: "/contact" },
   ],
   footerNav: [
-    { id: "f-about", label: "About us", href: "/about" },
-    { id: "f-brands", label: "londonBoy", href: "/brands/londonboy" },
-    { id: "f-socks", label: "Socks", href: "/brands/londonboy/socks" },
-    { id: "f-innerwear", label: "Innerwear", href: "/brands/londonboy/innerwear" },
-    { id: "f-products", label: "Catalogue", href: "/products" },
-    { id: "f-associates", label: "Industrial Associates", href: "/associates" },
-    { id: "f-contact", label: "Contact & Correspondence", href: "/contact" },
-    { id: "f-privacy", label: "Privacy Policy", href: "/privacy" },
+    { id: "about", label: "About Us", href: "/about" },
+    { id: "brands", label: "Brands Portfolio", href: "/brands" },
+    { id: "products", label: "Product Catalogue", href: "/products" },
+    { id: "associates", label: "Industrial Associates", href: "/associates" },
+    { id: "contact", label: "Commercial Correspondence", href: "/contact" },
   ],
 };
 
-export const homeContent = {
+export const homeContent: HomeContent = {
   headline: "Everyday essentials.\nA distinct point of view.",
-  subhead: "A composed textile portfolio with a distinct consumer-brand experience inside it. Developed in Dhaka, engineered for international distribution.",
+  subhead:
+    "A composed textile portfolio with a distinct consumer-brand experience inside it. Engineered in Dhaka for international distribution.",
   heroImage: "/images/textile_hero.jpg",
-  heroImageAlt: "Contemporary knitwear textile textures and combed cotton fabric in natural tones",
+  heroImageAlt:
+    "Contemporary knitwear textile textures and combed cotton fabric in natural tones",
   ctaPrimary: { label: "Explore londonBoy", href: "/brands/londonboy" },
   ctaSecondary: { label: "Meet Mack Knit Wear", href: "#mack-intro" },
   mackIntro: {
     eyebrow: "01 — THE ENTERPRISE",
     heading: "Composed craftsmanship, industrial credibility.",
-    body: "Mack Knit Wear operates as a specialized textile and brand development group based in Dhaka, Bangladesh. We bridge disciplined manufacturing execution with contemporary brand vision. Working in verified alignment with our accredited associates, we engineer everyday wardrobe essentials defined by tactile longevity, precise gauge execution, and responsible manufacturing discipline.",
+    body: "Mack Knit Wear operates as a specialized textile and brand development group based in Dhaka, Bangladesh. We bridge disciplined manufacturing execution with contemporary brand vision. Working alongside our accredited manufacturing associates, we develop everyday wardrobe essentials defined by tactile longevity, precise gauge execution, and responsible manufacturing discipline.",
   },
   londonBoyFeature: {
     eyebrow: "02 — SIGNATURE BRAND",
     name: "londonBoy",
     tagline: "Everyday apparel. Confident and expressive.",
-    description: "londonBoy is Mack Knit Wear's premier consumer brand, focusing exclusively on everyday essentials: structured ribbed socks and combed cotton innerwear designed with a distinct point of view.",
+    description:
+      "londonBoy is Mack Knit Wear's premier consumer brand, focusing exclusively on everyday essentials: structured ribbed socks and combed cotton innerwear designed with a distinct point of view.",
     cta: { label: "Explore londonBoy", href: "/brands/londonboy" },
     categories: [
       {
@@ -115,7 +61,8 @@ export const homeContent = {
         name: "Socks",
         slug: "socks",
         tagline: "Structured rhythm & architectural knit",
-        description: "Sharply cropped, dense vertical ribbing engineered for structural retention and all-day comfort.",
+        description:
+          "Sharply cropped, dense vertical ribbing engineered for structural retention and all-day comfort.",
         image: "/images/socks_scene.jpg",
         imageAlt: "Structured ribbed knit socks arranged in vertical rhythm",
         href: "/brands/londonboy/socks",
@@ -125,9 +72,11 @@ export const homeContent = {
         name: "Innerwear",
         slug: "innerwear",
         tagline: "Soft daylight & relaxed garment framing",
-        description: "Pure combed cotton jersey essentials with gentle drape, breathable softness, and clean lines.",
+        description:
+          "Pure combed cotton jersey essentials with gentle drape, breathable softness, and clean lines.",
         image: "/images/innerwear_scene.jpg",
-        imageAlt: "Premium combed cotton folded innerwear tees and boxers in natural daylight",
+        imageAlt:
+          "Premium combed cotton folded innerwear tees and boxers in natural daylight",
         href: "/brands/londonboy/innerwear",
       },
     ],
@@ -135,84 +84,142 @@ export const homeContent = {
   associatesPreview: {
     eyebrow: "03 — INDUSTRIAL NETWORK",
     heading: "Built alongside specialized manufacturing associates.",
-    description: "Our production capability relies on direct relationships with three premier industrial associates in Bangladesh, each bringing verified technical mastery.",
+    description:
+      "Our production capability relies on direct collaboration with three independent manufacturing associates in Bangladesh, each bringing specialized technical capability.",
     cta: { label: "View industrial directory", href: "/associates" },
   },
   contactPrompt: {
     eyebrow: "04 — CORRESPONDENCE",
-    heading: "Start a conversation.",
-    body: "For wholesale distribution of londonBoy, private label discussions, or contract textile development with Mack Knit Wear.",
-    cta: { label: "Prepare correspondence", href: "/contact" },
+    heading: "Transparent commercial dialogue.",
+    body:
+      "We invite wholesale inquiries, sample reviews, and development discussions directly with our commercial desk in Dhaka.",
+    cta: { label: "Initiate dialogue", href: "/contact" },
   },
 };
 
-export const aboutContent: {
-  title: string;
-  eyebrow: string;
-  intro: string;
-  image: string;
-  imageAlt: string;
-  chapters: AboutChapter[];
-} = {
-  title: "A company journal.",
-  eyebrow: "ABOUT MACK KNIT WEAR",
-  intro: "Mack Knit Wear is a contemporary textile development group and brand incubator based in Dhaka, Bangladesh.",
+export const aboutContent: AboutContent = {
+  eyebrow: "COMPANY JOURNAL",
+  title: "A disciplined textile practice.",
+  intro:
+    "Mack Knit Wear is a contemporary textile development group and brand incubator based in Dhaka, Bangladesh. We operate at the intersection of material architecture, responsible production discipline, and consumer brand focus.",
   image: "/images/knitwear.jpg",
-  imageAlt: "Intricate knitted textile detail showing stitch definition",
+  imageAlt: "Close-up definition of fine gauge knit structure",
+  caption: "Gauge definition & loop structure · Dhaka development studio",
   chapters: [
     {
-      id: "enterprise",
+      id: "the-enterprise",
       number: "01",
       title: "The Enterprise",
+      anchor: "the-enterprise",
+      lead: "Mack Knit Wear develops everyday knitted apparel with an emphasis on tactile quality and construction integrity.",
       content: [
-        "Mack Knit Wear was founded on a straightforward commitment: contemporary knitwear must unite tactile honesty with reliable manufacturing discipline.",
-        "Operating from Dhaka, we act as both an independent brand incubator and an engineering bridge for specialized apparel production. Rather than making exaggerated claims or reciting generic factory histories, we focus strictly on verifiable textile craftsmanship, transparent commercial relationships, and disciplined quality control.",
+        "Headquartered in Dhaka, we combine local textile infrastructure with modern brand curation. Rather than pursuing unrestrained volume, our focus centers on disciplined product programs executed to exacting international standards.",
+        "We approach knitwear as an architectural medium — selecting yarn weights, twist factors, and stitch densities that preserve their shape, drape, and hand-feel through repeated washing and daily wear.",
+      ],
+      stats: [
+        { label: "Operating Hub", value: "Dhaka, Bangladesh" },
+        { label: "Core Discipline", value: "Textiles & Brand Incubation" },
       ],
     },
     {
-      id: "londonboy",
+      id: "londonboy-identity",
       number: "02",
       title: "londonBoy Identity",
+      anchor: "londonboy-identity",
+      lead: "londonBoy represents our direct consumer-brand expression, focused strictly on two foundational apparel categories.",
       content: [
-        "londonBoy represents our focused consumer-facing brand expression. Dedicated to everyday essentials, londonBoy reinterprets socks and innerwear through architectural knit textures, refined cottons, and confident minimalism.",
-        "By incubating londonBoy in-house, Mack Knit Wear directly tests material innovations, gauge densities, and garment durability in real-world retail contexts before scaling production.",
+        "Conceived as an antidote to disposable basics, londonBoy specializes exclusively in Socks and Innerwear. Each category receives focused engineering attention rather than being treated as an afterthought in a sprawling catalogue.",
+        "The collection pairs architectural ribbing and hand-linked closures in socks with long-staple combed cotton jersey in base layers, achieving everyday distinction through material honesty.",
+      ],
+      stats: [
+        { label: "Brand Classification", value: "Signature Consumer Brand" },
+        { label: "Focused Categories", value: "Socks & Innerwear Only" },
       ],
     },
     {
-      id: "associates",
+      id: "industrial-associates",
       number: "03",
       title: "Industrial Associates",
+      anchor: "industrial-associates",
+      lead: "Our manufacturing capability is realized through collaborative relationships with three accredited industrial associates in Bangladesh.",
       content: [
-        "Our manufacturing capability is built upon long-term collaborative partnerships with three accredited industrial associates in Bangladesh: Sufia Hawlader Composite Ltd., Umeda SB Industries Ltd., and Alam Garments.",
-        "These independent industrial partners bring specialized circular knitting, composite textile dyeing, precision cutting, and garment finishing capabilities. We maintain mutual operational alignment without claiming exclusive ownership, ensuring flexible, resilient supply chains for our partners.",
+        "Rather than claiming exclusive factory ownership, we maintain direct technical partnerships with independent manufacturers across Dhaka Division, Gazipur, and Narayanganj.",
+        "Each partner contributes verified technical strengths across composite knitting, large-scale assembly, and precision hand-finishing, providing flexible capacity and rigorous quality governance.",
+      ],
+      stats: [
+        { label: "Network Partners", value: "3 Named Industrial Associates" },
+        { label: "Production Scope", value: "Knitting, Cutting & Finishing" },
       ],
     },
     {
-      id: "governance",
+      id: "commercial-correspondence",
       number: "04",
       title: "Commercial Correspondence",
+      anchor: "commercial-correspondence",
+      lead: "We engage directly with international wholesale buyers, private label clients, and retail partners.",
       content: [
-        "Integrity in apparel manufacturing begins with factual communication. We maintain direct, personal dialogue with wholesale buyers, retailers, and private label partners.",
-        "Every technical specification and timeline we provide is derived from actual production trials and verified yarn batches. For all inquiries, our Dhaka office provides dedicated commercial correspondence within two business days.",
+        "Our trade desk in Dhaka facilitates direct correspondence, sample requests, and technical specification reviews without intermediary layers. Every inquiry connects you with production coordinators who understand yarn counts, lead times, and factory scheduling.",
+        "We welcome commercial inquiries and sample requests from retail stockists seeking reliable knitwear production backed by transparent dialogue.",
+      ],
+      stats: [
+        { label: "Trade Desk Location", value: "Dhaka (BST Timezone)" },
+        { label: "Primary Channel", value: "Direct Trade Correspondence" },
       ],
     },
   ],
 };
 
-export const londonBoyBrand = {
+export const londonBoyBrand: Brand = {
+  id: "brand-londonboy",
+  slug: "londonboy",
   name: "londonBoy",
   wordmark: "londonBoy",
-  category: "Everyday Apparel",
+  category: "Signature Consumer Brand",
   tagline: "Everyday essentials. A distinct point of view.",
-  summary: "A confident, expressive everyday apparel brand incubated by Mack Knit Wear, focused purely on structured socks and combed cotton innerwear.",
+  summary:
+    "londonBoy is Mack Knit Wear's premier consumer brand, focusing exclusively on everyday essentials: structured ribbed socks and combed cotton innerwear designed with a distinct point of view.",
+  description:
+    "londonBoy is Mack Knit Wear's premier consumer brand, focusing exclusively on everyday essentials: structured ribbed socks and combed cotton innerwear designed with a distinct point of view.",
+  statement:
+    "We believe everyday apparel deserves deliberate engineering. By focusing entirely on Socks and Innerwear, londonBoy achieves material depth, comfortable structural retention, and lasting tactile pleasure in the garments worn closest to the body.",
+  editorialStatement:
+    "We believe everyday apparel deserves deliberate engineering. By focusing entirely on Socks and Innerwear, londonBoy achieves material depth, comfortable structural retention, and lasting tactile pleasure in the garments worn closest to the body.",
   heroImage: "/images/textile_hero.jpg",
   heroImageAlt: "londonBoy textile and apparel composition",
+  inquiryNotice:
+    "Direct wholesale inquiries and sample requests are coordinated through our Dhaka commercial desk.",
+  categories: [
+    {
+      id: "socks",
+      name: "Socks",
+      slug: "socks",
+      tagline: "Structured rhythm & architectural knit",
+      description:
+        "Knitted on precision circular machines in Bangladesh, our socks program is engineered with continuous vertical rib structures that stay upright without aggressive elastic constriction. Reinforced heels and toes with hand-linked closures ensure durability and seamless comfort.",
+      image: "/images/socks_scene.jpg",
+      imageAlt: "Dense vertical ribbed crew socks in charcoal and off-white",
+      href: "/brands/londonboy/socks",
+    },
+    {
+      id: "innerwear",
+      name: "Innerwear",
+      slug: "innerwear",
+      tagline: "Soft daylight & relaxed garment framing",
+      description:
+        "Crafted from long-staple combed cotton jersey, each garment features soft, flatlock seams to minimize friction against skin. Clean necklines, covered elastic waistbands, and breathable drape define our fundamental base layers.",
+      image: "/images/innerwear_scene.jpg",
+      imageAlt:
+        "Combed cotton jersey crew undershirt and boxer shorts folded on natural linen",
+      href: "/brands/londonboy/innerwear",
+    },
+  ],
   scenes: {
     socks: {
       id: "socks",
       title: "SOCKS",
       subtitle: "Vertical Rhythm & Structured Architecture",
-      description: "A sharper, structured composition defined by high-gauge vertical ribbing, reinforced heel-and-toe shaping, and dense yarn twists designed to hold silhouette throughout the day.",
+      description:
+        "A sharper, structured composition defined by high-gauge vertical ribbing, reinforced heel-and-toe shaping, and dense yarn twists designed to hold silhouette throughout the day.",
       image: "/images/socks_scene.jpg",
       imageAlt: "Structured ribbed knit socks arranged in vertical rhythm",
       cta: { label: "Explore Socks Collection", href: "/brands/londonboy/socks" },
@@ -226,20 +233,24 @@ export const londonBoyBrand = {
       id: "innerwear",
       title: "INNERWEAR",
       subtitle: "Soft Daylight & Relaxed Garment Framing",
-      description: "A softer, lighter composition crafted from combed natural cotton jersey. Clean necklines, flatlock comfort seams, and balanced proportions for essential daily wear.",
+      description:
+        "A softer, lighter composition crafted from combed natural cotton jersey. Clean necklines, flatlock comfort seams, and balanced proportions for essential daily wear.",
       image: "/images/innerwear_scene.jpg",
       imageAlt: "Combed cotton innerwear jersey essentials in soft daylight",
-      cta: { label: "Explore Innerwear Collection", href: "/brands/londonboy/innerwear" },
+      cta: {
+        label: "Explore Innerwear Collection",
+        href: "/brands/londonboy/innerwear",
+      },
       keyNotes: [
         "Combed long-staple cotton",
         "Non-chafing flatlock seams",
-        "Breathable natural drape",
+        "Balanced daily proportions",
       ],
     },
   },
-  statement: "londonBoy strips away unnecessary ornamentation to focus entirely on the items worn closest to the body. No gimmicks, no exaggerated technical claims—just tactile precision, comfortable fits, and dependable everyday wear.",
-  inquiryNotice: "For wholesale distribution, stockist placement, or retail partnerships with londonBoy, reach out through our commercial correspondence desk.",
 };
+
+export const brandsList: Brand[] = [londonBoyBrand];
 
 export const productsList: Product[] = [
   {
@@ -250,39 +261,62 @@ export const productsList: Product[] = [
     category: "Socks",
     categorySlug: "socks",
     refCode: "LB-SK-01",
-    summary: "Heavy-gauge vertical ribbed crew sock engineered for structural stability and cushioned daily comfort.",
-    description: "The foundation of the londonBoy socks programme. Features a dense 3x1 vertical rib structure that stays upright without aggressive elastic constriction. Knitted with reinforced heel and toe pockets and smooth linked toe closures.",
+    summary:
+      "Heavy-gauge vertical ribbed crew sock engineered for structural stability and cushioned daily comfort.",
+    description:
+      "The foundation of the londonBoy socks program. Knit from combed cotton yarn blended with a fine nylon core for recovery and resilience. Features a hand-linked seamless toe closure to eliminate chafing and a reinforced heel pocket that prevents slipping inside footwear.",
     image: "/images/socks_scene.jpg",
-    imageAlt: "Structured ribbed crew socks in charcoal, slate, and ecru",
-    secondaryImage: "/images/textile_hero.jpg",
+    imageAlt: "Structured ribbed crew socks in slate charcoal and chalk ecru",
+    secondaryImage: "/images/knitwear.jpg",
+    gallery: [
+      {
+        image: "/images/socks_scene.jpg",
+        alt: "Structured ribbed crew sock vertical display",
+        caption: "Architectural 3x1 Rib Structure",
+      },
+      {
+        image: "/images/knitwear.jpg",
+        alt: "Close-up of knit texture and yarn loop integrity",
+        caption: "Loop density and hand-linked closure detail",
+      },
+    ],
     specifications: [
-      { label: "Category", value: "Everyday Socks" },
-      { label: "Knit Type", value: "3x1 Engineered Vertical Rib" },
-      { label: "Toe Construction", value: "Smooth hand-linked toe seam" },
-      { label: "Cuff Design", value: "Self-retaining elasticized welt" },
-      { label: "Care", value: "Machine wash warm, tumble dry low" },
+      { label: "Category", value: "Crew Socks" },
+      { label: "Knit Profile", value: "3x1 Engineered Heavy Rib" },
+      { label: "Toe Closure", value: "Hand-linked seamless finish" },
+      { label: "Cuff Design", value: "Non-constricting elastic stay-up welt" },
+      { label: "Origin", value: "Knitted and finished in Bangladesh" },
     ],
     featured: true,
   },
   {
     id: "prod-lb-sock-02",
-    slug: "fine-gauge-mercerized-sock",
-    name: "Fine-Gauge Mercerized Sock",
+    slug: "fine-gauge-mercerized-dress-sock",
+    name: "Fine-Gauge Mercerized Dress Sock",
     brand: "londonBoy",
     category: "Socks",
     categorySlug: "socks",
     refCode: "LB-SK-02",
-    summary: "Sleek low-profile dress sock knitted from lustrous combed mercerized cotton yarn.",
-    description: "A refined alternative designed for low-profile footwear and tailoring. Smooth face finish with subtle heel reinforcement and high breathability.",
+    summary:
+      "Smooth, lustrous fine-knit sock crafted from mercerized cotton for formal tailoring and subtle elegance.",
+    description:
+      "Engineered on 200-needle circular knitting cylinders for ultra-smooth surface uniformity. Mercerization enhances cotton luster, deepens dye uptake, and significantly reduces surface piling.",
     image: "/images/socks_scene.jpg",
-    imageAlt: "Fine-gauge mercerized dress sock in deep charcoal",
-    secondaryImage: "/images/textile_hero.jpg",
+    imageAlt: "Fine gauge mercerized dress sock in midnight slate",
+    secondaryImage: "/images/socks_scene.jpg",
+    gallery: [
+      {
+        image: "/images/socks_scene.jpg",
+        alt: "Fine gauge dress sock surface texture",
+        caption: "Mercerized yarn with smooth sheen",
+      },
+    ],
     specifications: [
-      { label: "Category", value: "Fine Socks" },
-      { label: "Finish", value: "Mercerized smooth yarn face" },
-      { label: "Gauge", value: "Fine-gauge circular knit" },
-      { label: "Fit", value: "Contoured anatomical calf rise" },
-      { label: "Care", value: "Machine wash delicate, hang dry" },
+      { label: "Category", value: "Dress Socks" },
+      { label: "Needle Count", value: "200-Needle Single Cylinder" },
+      { label: "Yarn Treatment", value: "Double Mercerized Long-Staple Cotton" },
+      { label: "Heel / Toe", value: "Reciprocated reinforced heel and toe" },
+      { label: "Origin", value: "Knitted and finished in Bangladesh" },
     ],
     featured: true,
   },
@@ -294,17 +328,31 @@ export const productsList: Product[] = [
     category: "Innerwear",
     categorySlug: "innerwear",
     refCode: "LB-IW-01",
-    summary: "Essential crewneck undershirt in combed cotton jersey with flatlock stitching and stay-flat collar.",
-    description: "Crafted for base-layer comfort and clean framing. The neckline is reinforced with a ribbed binding that retains its shape after repeated washing. Smooth side seams and pre-shrunk fabric.",
+    summary:
+      "Breathable combed cotton jersey undershirt with stay-flat bound collar and tailored fit.",
+    description:
+      "A pure base-layer essential. Made from 100% single-knit combed cotton jersey for natural moisture absorption and airflow. The collar is bound with fine 1x1 ribbing that remains flat after repeated machine washing.",
     image: "/images/innerwear_scene.jpg",
     imageAlt: "Combed cotton crew undershirt neatly folded in white",
     secondaryImage: "/images/knitwear.jpg",
+    gallery: [
+      {
+        image: "/images/innerwear_scene.jpg",
+        alt: "Combed cotton crew undershirt neatly folded",
+        caption: "Clean neckline and single jersey drape",
+      },
+      {
+        image: "/images/knitwear.jpg",
+        alt: "Close-up of cotton jersey stitch consistency",
+        caption: "Single jersey knit structure",
+      },
+    ],
     specifications: [
       { label: "Category", value: "Innerwear Base Layer" },
       { label: "Fabric", value: "100% Combed Single Jersey" },
       { label: "Seams", value: "Flatlock soft-touch seams" },
       { label: "Collar", value: "Ribbed stay-flat bound collar" },
-      { label: "Shrinkage", value: "Pre-shrunk dimension stability" },
+      { label: "Origin", value: "Knitted and finished in Bangladesh" },
     ],
     featured: true,
   },
@@ -316,17 +364,26 @@ export const productsList: Product[] = [
     category: "Innerwear",
     categorySlug: "innerwear",
     refCode: "LB-IW-02",
-    summary: "Soft knit jersey boxer with covered elastic waistband and non-restrictive relaxed leg opening.",
-    description: "Combines the breathability of pure cotton knit with relaxed comfort. An enclosed elastic waistband prevents skin contact with bare elastic.",
+    summary:
+      "Soft knit jersey boxer with covered elastic waistband and non-restrictive relaxed leg opening.",
+    description:
+      "Combines the breathability of pure cotton knit with relaxed comfort. An enclosed elastic waistband prevents skin contact with bare elastic.",
     image: "/images/innerwear_scene.jpg",
     imageAlt: "Relaxed jersey boxer shorts in chalk grey",
     secondaryImage: "/images/innerwear_scene.jpg",
+    gallery: [
+      {
+        image: "/images/innerwear_scene.jpg",
+        alt: "Relaxed jersey boxer short folded in natural daylight",
+        caption: "Soft jersey drape and covered waistband",
+      },
+    ],
     specifications: [
       { label: "Category", value: "Underwear" },
       { label: "Waistband", value: "Enclosed self-fabric elastic waistband" },
       { label: "Fabric", value: "Breathable cotton knit jersey" },
       { label: "Fit", value: "Relaxed daily drape" },
-      { label: "Care", value: "Machine wash warm, tumble dry low" },
+      { label: "Origin", value: "Knitted and finished in Bangladesh" },
     ],
     featured: true,
   },
@@ -338,8 +395,8 @@ export const associatesList: Associate[] = [
     name: "Sufia Hawlader Composite Ltd.",
     role: "Composite Textile & Wet Processing Partner",
     location: "Dhaka Division, Bangladesh",
-    description: "Sufia Hawlader Composite Ltd. operates comprehensive composite textile manufacturing facilities, incorporating circular knitting machines and environmentally managed wet-processing dye houses. Their production scope supports consistent fabric quality, colorfastness standards, and certified effluent treatment systems.",
-    website: "https://sufiahawlader.com",
+    description:
+      "Sufia Hawlader Composite Ltd. operates composite textile manufacturing facilities, incorporating circular knitting machines and wet-processing dye houses. Their production scope supports consistent fabric quality, colorfastness standards, and managed effluent treatment systems.",
     displayMark: "SHC",
   },
   {
@@ -347,8 +404,9 @@ export const associatesList: Associate[] = [
     name: "Umeda SB Industries Ltd.",
     role: "Knitting & Garment Assembly Partner",
     location: "Gazipur, Bangladesh",
-    description: "Umeda SB Industries Ltd. specializes in modern knitting infrastructure and large-scale garment assembly for international export markets. Their facility emphasizes rigorous in-line quality inspection, stitch consistency across diverse gauges, and structured compliance with international labor and occupational safety regulations.",
-    website: "https://umedasb.com",
+    description:
+      "Umeda SB Industries Ltd. specializes in modern knitting infrastructure and garment assembly for export markets. Their facility emphasizes in-line quality inspection, stitch consistency across diverse gauges, and structured compliance with occupational safety regulations.",
+    website: "https://umedasb.com/",
     displayMark: "USB",
   },
   {
@@ -356,8 +414,9 @@ export const associatesList: Associate[] = [
     name: "Alam Garments",
     role: "Precision Cutting & Finishing Partner",
     location: "Narayanganj, Bangladesh",
-    description: "Alam Garments provides focused expertise in precision cutting, linking, and garment finishing. With roots in Bangladesh's historic textile corridor in Narayanganj, the facility brings dependable craftsmanship to delicate knit finishes, collar linkings, and export packaging.",
-    website: "",
+    description:
+      "Alam Garments provides focused expertise in precision cutting, linking, and garment finishing. Located in Bangladesh's historic textile corridor in Narayanganj, the facility brings dependable craftsmanship to delicate knit finishes, collar linkings, and export packaging.",
+    website: "https://alamgarments.com/",
     displayMark: "AG",
   },
 ];
