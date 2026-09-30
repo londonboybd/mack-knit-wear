@@ -1,288 +1,218 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, X, ArrowUpRight, Layers, SlidersHorizontal } from "lucide-react";
-import type { Content, RecordItem } from "@/lib/schema";
+import { Search, ArrowUpRight, Filter, X } from "lucide-react";
+import { productsList, type Product } from "@/lib/data/site-data";
+import { Reveal } from "./motion";
 
-const ITEMS_PER_PAGE = 9;
+interface ProductDirectoryProps {
+  page?: any;
+  products?: any[];
+  allRecords?: any[];
+}
 
-export function ProductDirectory({
-  page,
-  products,
-  allRecords = [],
-}: {
-  page: Content;
-  products: RecordItem[];
-  allRecords?: RecordItem[];
-}) {
+export function ProductDirectory({ page, products, allRecords }: ProductDirectoryProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Initialize filter state from URL query parameters
-  const [query, setQuery] = useState(searchParams.get("q") || "");
-  const [category, setCategory] = useState(searchParams.get("category") || "all");
-  const [brandFilter, setBrandFilter] = useState(searchParams.get("brand") || "all");
-  const [pageNumber, setPageNumber] = useState(Number(searchParams.get("p")) || 1);
-
-  // Sync state when URL searchParams change (handles Browser Back / Forward)
-  useEffect(() => {
-    setQuery(searchParams.get("q") || "");
-    setCategory(searchParams.get("category") || "all");
-    setBrandFilter(searchParams.get("brand") || "all");
-    setPageNumber(Number(searchParams.get("p")) || 1);
-  }, [searchParams]);
-
-  // Push state updates to URL so filters are shareable and survive back navigation
-  const updateUrl = (newQuery: string, newCat: string, newBrand: string, newPage: number) => {
-    const params = new URLSearchParams();
-    if (newQuery) params.set("q", newQuery);
-    if (newCat && newCat !== "all") params.set("category", newCat);
-    if (newBrand && newBrand !== "all") params.set("brand", newBrand);
-    if (newPage > 1) params.set("p", String(newPage));
-
-    const stringified = params.toString();
-    router.replace(`/products${stringified ? `?${stringified}` : ""}`, { scroll: false });
-  };
-
-  // Extract unique categories and owned brands
-  const categories = useMemo(() => {
-    const set = new Set<string>();
-    products.forEach((p) => {
-      const c = p.published || p.draft;
-      if (c.category) set.add(c.category);
-    });
-    return Array.from(set);
-  }, [products]);
-
-  const brands = useMemo(() => {
-    return allRecords.filter((r) => r.kind === "brand");
-  }, [allRecords]);
-
-  // Filter and sort products
-  const filtered = useMemo(() => {
-    return products.filter((p) => {
-      const c = p.published || p.draft;
-      const matchesSearch =
-        !query ||
-        c.title.toLowerCase().includes(query.toLowerCase()) ||
-        c.refCode?.toLowerCase().includes(query.toLowerCase()) ||
-        c.materials?.toLowerCase().includes(query.toLowerCase()) ||
-        c.summary?.toLowerCase().includes(query.toLowerCase());
-
-      const matchesCategory = category === "all" || c.category === category;
-
-      let matchesBrand = true;
-      if (brandFilter !== "all") {
-        const matchedBrand = brands.find(
-          (b) => b.id === brandFilter || (b.published || b.draft).title === brandFilter,
-        );
-        matchesBrand = Boolean(matchedBrand && c.brandId === matchedBrand.id);
-      }
-
-      return matchesSearch && matchesCategory && matchesBrand;
-    });
-  }, [products, query, category, brandFilter, brands]);
-
-  // Pagination calculation
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
-  const currentPage = Math.min(pageNumber, totalPages);
-  const paginated = filtered.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
+  const [activeCategory, setActiveCategory] = useState<"all" | "socks" | "innerwear">(
+    (searchParams.get("category") as "all" | "socks" | "innerwear") || "all"
   );
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
 
-  const clearFilters = () => {
-    setQuery("");
-    setCategory("all");
-    setBrandFilter("all");
-    setPageNumber(1);
-    updateUrl("", "all", "all", 1);
+  const handleCategoryChange = (cat: "all" | "socks" | "innerwear") => {
+    setActiveCategory(cat);
+    const params = new URLSearchParams();
+    if (cat !== "all") params.set("category", cat);
+    if (searchQuery) params.set("q", searchQuery);
+    router.replace(`/products${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
   };
 
-  const hasActiveFilters = query !== "" || category !== "all" || brandFilter !== "all";
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    const params = new URLSearchParams();
+    if (activeCategory !== "all") params.set("category", activeCategory);
+    if (query) params.set("q", query);
+    router.replace(`/products${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
+  };
+
+  const filteredProducts = useMemo(() => {
+    return productsList.filter((p) => {
+      const matchesCategory =
+        activeCategory === "all" || p.categorySlug === activeCategory;
+      const matchesSearch =
+        !searchQuery ||
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.refCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.summary.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeCategory, searchQuery]);
 
   return (
     <div className="product-directory-page">
-      {/* Editorial Header */}
-      <section className="page-intro">
-        <div className="eyebrow">
-          <span className="line" />
-          {page.eyebrow || "PRODUCTS & CATALOGUE"}
-        </div>
-        <h1>{page.title || "Knitwear Production Catalogue"}</h1>
-        <p>{page.summary || "Explore our confirmed technical specifications, gauges, and wholesale collections."}</p>
-      </section>
+      {/* Catalogue Header */}
+      <section className="catalogue-header-section" aria-label="Catalogue Header">
+        <div className="section-container">
+          <Reveal delay={50}>
+            <span className="hero-eyebrow">PRACTICAL CATALOGUE</span>
+          </Reveal>
+          <Reveal delay={120}>
+            <h1 className="catalogue-title">
+              Confirmed Everyday Apparel.
+              <br />
+              <span className="serif-accent">Structured socks & combed innerwear.</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={180}>
+            <p className="catalogue-intro-text">
+              Direct access to confirmed garment specifications. Knitted and finished across our manufacturing network in Bangladesh.
+            </p>
+          </Reveal>
 
-      {/* Filter and Search Bar */}
-      <section className="section product-filter-section">
-        <div className="catalog-toolbar">
-          <div className="search-field catalog-search">
-            <Search size={17} />
-            <input
-              placeholder="Search by name, SKU reference, or yarn fiber…"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setPageNumber(1);
-                updateUrl(e.target.value, category, brandFilter, 1);
-              }}
-              aria-label="Search product catalogue"
-            />
-            {query && (
+          {/* Practical Category Navigation & Search */}
+          <div className="catalogue-controls-bar">
+            <div className="category-pills-wrap" role="tablist" aria-label="Filter by Category">
               <button
                 type="button"
-                className="clear-search-btn"
-                onClick={() => {
-                  setQuery("");
-                  updateUrl("", category, brandFilter, 1);
-                }}
-                aria-label="Clear search query"
+                role="tab"
+                aria-selected={activeCategory === "all"}
+                className={`category-pill-btn ${activeCategory === "all" ? "active" : ""}`}
+                onClick={() => handleCategoryChange("all")}
               >
-                <X size={15} />
+                All Styles <span className="pill-count">({productsList.length})</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeCategory === "socks"}
+                className={`category-pill-btn ${activeCategory === "socks" ? "active" : ""}`}
+                onClick={() => handleCategoryChange("socks")}
+              >
+                Socks <span className="pill-count">(2)</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeCategory === "innerwear"}
+                className={`category-pill-btn ${activeCategory === "innerwear" ? "active" : ""}`}
+                onClick={() => handleCategoryChange("innerwear")}
+              >
+                Innerwear <span className="pill-count">(2)</span>
+              </button>
+            </div>
+
+            <div className="catalogue-search-wrap">
+              <Search size={16} className="search-icon" aria-hidden="true" />
+              <input
+                type="search"
+                className="catalogue-search-input"
+                placeholder="Search style or SKU..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                aria-label="Filter products by name or code"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="search-clear-btn"
+                  onClick={() => handleSearchChange("")}
+                  aria-label="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Catalogue Product Grid */}
+      <section className="catalogue-grid-section" aria-label="Product Styles">
+        <div className="section-container">
+          <div className="catalogue-results-meta">
+            <span>
+              Showing <strong>{filteredProducts.length}</strong> confirmed style{filteredProducts.length === 1 ? "" : "s"}
+            </span>
+            {activeCategory !== "all" && (
+              <button
+                type="button"
+                className="clear-cat-btn"
+                onClick={() => handleCategoryChange("all")}
+              >
+                Reset filters
               </button>
             )}
           </div>
 
-          <div className="filter-dropdowns-group">
-            {/* Category Dropdown */}
-            <select
-              aria-label="Filter by product category"
-              value={category}
-              onChange={(e) => {
-                setCategory(e.target.value);
-                setPageNumber(1);
-                updateUrl(query, e.target.value, brandFilter, 1);
-              }}
-            >
-              <option value="all">All categories ({products.length})</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-
-            {/* Brand Affiliation Dropdown */}
-            {brands.length > 0 && (
-              <select
-                aria-label="Filter by brand"
-                value={brandFilter}
-                onChange={(e) => {
-                  setBrandFilter(e.target.value);
-                  setPageNumber(1);
-                  updateUrl(query, category, e.target.value, 1);
+          {filteredProducts.length === 0 ? (
+            <div className="catalogue-empty-state">
+              <p>No confirmed products matched your search criteria.</p>
+              <button
+                type="button"
+                className="button secondary-quiet"
+                onClick={() => {
+                  setActiveCategory("all");
+                  setSearchQuery("");
                 }}
               >
-                <option value="all">All brands</option>
-                {brands.map((b) => (
-                  <option key={b.id} value={(b.published || b.draft).title}>
-                    {(b.published || b.draft).title}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-        </div>
+                View all confirmed styles
+              </button>
+            </div>
+          ) : (
+            <div className="catalogue-product-grid">
+              {filteredProducts.map((prod) => (
+                <article key={prod.id} className="catalogue-product-card">
+                  <div className="card-photo-box">
+                    <img
+                      src={prod.image}
+                      alt={prod.imageAlt}
+                      loading="lazy"
+                      className="primary-product-img"
+                    />
+                    {prod.secondaryImage && (
+                      <img
+                        src={prod.secondaryImage}
+                        alt=""
+                        loading="lazy"
+                        className="hover-secondary-img"
+                        aria-hidden="true"
+                      />
+                    )}
+                    <span className="card-badge-code">{prod.refCode}</span>
+                  </div>
 
-        {/* Results Count & Clear Filters */}
-        <div className="filter-feedback-row">
-          <span className="results-count-text">
-            Showing <strong>{filtered.length}</strong> {filtered.length === 1 ? "product" : "products"}
-            {hasActiveFilters && " matching your criteria"}
-          </span>
+                  <div className="card-details-box">
+                    <div className="card-top-row">
+                      <span className="card-brand-tag">{prod.brand} · {prod.category}</span>
+                    </div>
 
-          {hasActiveFilters && (
-            <button type="button" className="clear-filters-link" onClick={clearFilters}>
-              <X size={14} /> Clear all filters
-            </button>
+                    <h2 className="card-product-name">{prod.name}</h2>
+                    <p className="card-product-summary">{prod.summary}</p>
+
+                    <div className="card-actions-row">
+                      <Link
+                        href={`/products/${prod.slug}`}
+                        className="button primary-dark card-specs-btn"
+                      >
+                        Inspect Specifications <ArrowUpRight size={15} />
+                      </Link>
+
+                      <Link
+                        href={`/contact?product=${encodeURIComponent(prod.name)}&sku=${encodeURIComponent(prod.refCode)}&brand=${encodeURIComponent(prod.brand)}&type=Wholesale`}
+                        className="button secondary-quiet card-inquire-btn"
+                      >
+                        Inquire
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           )}
         </div>
-
-        {/* Product Grid */}
-        <div className="product-catalog-grid">
-          {paginated.map((p) => {
-            const c = p.published || p.draft;
-            const itemBrand = brands.find((b) => b.id === c.brandId);
-            const brandTitle = itemBrand ? (itemBrand.published || itemBrand.draft).title : null;
-
-            return (
-              <article className="product-card" key={p.id}>
-                <Link href={`/products/${p.slug}`} className="product-card-inner">
-                  <div className="product-image-box">
-                    {c.image ? (
-                      <img src={c.image} alt={c.imageAlt || c.title} loading="lazy" />
-                    ) : (
-                      <div className="product-placeholder">
-                        <Layers size={40} />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="product-card-meta">
-                    <span className="product-category">{brandTitle || c.category || "Knitwear"}</span>
-                    {c.refCode && <span className="product-ref">{c.refCode}</span>}
-                  </div>
-
-                  <h3 className="product-title">{c.title}</h3>
-                  {c.materials && <p className="product-materials">{c.materials}</p>}
-
-                  <span className="product-link">
-                    View specifications <ArrowUpRight size={15} />
-                  </span>
-                </Link>
-              </article>
-            );
-          })}
-        </div>
-
-        {/* Empty State */}
-        {filtered.length === 0 && (
-          <div className="empty-public">
-            <Layers size={32} />
-            <h3>No products found</h3>
-            <p>We could not find any knitwear matching your filter selections.</p>
-            <button type="button" className="button dark small" onClick={clearFilters}>
-              Reset search & filters
-            </button>
-          </div>
-        )}
-
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="pagination-bar" role="navigation" aria-label="Product pagination">
-            <button
-              type="button"
-              className="button outline small"
-              disabled={currentPage <= 1}
-              onClick={() => {
-                const prev = currentPage - 1;
-                setPageNumber(prev);
-                updateUrl(query, category, brandFilter, prev);
-              }}
-            >
-              Previous
-            </button>
-
-            <span className="pagination-page-indicator">
-              Page {currentPage} of {totalPages}
-            </span>
-
-            <button
-              type="button"
-              className="button outline small"
-              disabled={currentPage >= totalPages}
-              onClick={() => {
-                const next = currentPage + 1;
-                setPageNumber(next);
-                updateUrl(query, category, brandFilter, next);
-              }}
-            >
-              Next
-            </button>
-          </div>
-        )}
       </section>
     </div>
   );

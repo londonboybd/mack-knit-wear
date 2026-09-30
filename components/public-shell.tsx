@@ -1,286 +1,341 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, Menu, X, ExternalLink } from "lucide-react";
-import type { Content, RecordItem, NavItem } from "@/lib/schema";
-
-export function Logo({
-  name = "Mack Knit Wear",
-  tagline = "KNITWEAR & BEYOND",
-  image = "",
-  alt = "",
-}: {
-  name?: string;
-  tagline?: string;
-  image?: string;
-  alt?: string;
-}) {
-  if (image)
-    return <img className="company-logo" src={image} alt={alt || name} />;
-  return (
-    <span className="wordmark">
-      <span className="monogram" aria-hidden="true">
-        M
-      </span>
-      <span>
-        {name}
-        <small>{tagline}</small>
-      </span>
-    </span>
-  );
-}
+import { ArrowUpRight, ArrowLeft, Menu, X, ExternalLink } from "lucide-react";
+import { siteSettings } from "@/lib/data/site-data";
+import { ScrollProgress } from "./motion";
 
 export function PublicShell({
   children,
   settings,
-  records = [],
-  demo = false,
+  records,
+  demo,
   previewBannerText,
 }: {
   children: React.ReactNode;
-  settings: Content;
-  records: RecordItem[];
+  settings?: any;
+  records?: any;
   demo?: boolean;
   previewBannerText?: string;
 }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const toggleBtnRef = useRef<HTMLButtonElement>(null);
+  const menuDrawerRef = useRef<HTMLDivElement>(null);
 
-  // Close mobile menu on Escape key press or route change
+  const isLondonBoyRoute = pathname.startsWith("/brands/londonboy");
+
+  // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  // Handle Escape key and focus management for mobile menu
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && mobileMenuOpen) {
         setMobileMenuOpen(false);
+        toggleBtnRef.current?.focus();
       }
     };
+
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+      // Focus first focusable link in the drawer
+      setTimeout(() => {
+        const firstLink = menuDrawerRef.current?.querySelector("a");
+        firstLink?.focus();
+      }, 50);
+    } else {
+      document.body.style.overflow = "";
+    }
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
   }, [mobileMenuOpen]);
 
-  // Set of published page slugs to ensure we never display broken internal links
-  const publishedPages = new Set(
-    records.filter((r) => r.kind === "page" && r.published).map((r) => r.slug),
-  );
-  const hasPublishedNetwork = records.some((r) => r.kind === "network" && r.published);
-
-  // Determine navigation items from settings or sensible default
-  let headerNavItems: NavItem[] =
-    settings.headerNav && settings.headerNav.length > 0
-      ? settings.headerNav
-      : [
-          { id: "1", label: "About us", href: "/about", isExternal: false, visible: true, order: 1 },
-          { id: "2", label: "Our brands", href: "/brands", isExternal: false, visible: true, order: 2 },
-          { id: "3", label: "Products", href: "/products", isExternal: false, visible: true, order: 3 },
-          { id: "4", label: "Capabilities", href: "/capabilities", isExternal: false, visible: true, order: 4 },
-          { id: "5", label: "Our network", href: "/network", isExternal: false, visible: hasPublishedNetwork, order: 5 },
-        ];
-
-  // Filter out invisible items or internal links pointing to unpublished pages
-  const validHeaderNav = headerNavItems
-    .filter((item) => item.visible)
-    .filter((item) => {
-      if (item.isExternal) return true;
-      const cleanSlug = item.href.replace(/^\//, "");
-      if (!cleanSlug || cleanSlug === "home") return true;
-      if (cleanSlug === "network" && !hasPublishedNetwork) return false;
-      return publishedPages.has(cleanSlug) || cleanSlug === "contact" || cleanSlug === "capabilities";
-    })
-    .sort((a, b) => a.order - b.order);
-
-  // Determine footer navigation items
-  let footerNavItems: NavItem[] =
-    settings.footerNav && settings.footerNav.length > 0
-      ? settings.footerNav
-      : [
-          { id: "f1", label: "About us", href: "/about", isExternal: false, visible: true, order: 1 },
-          { id: "f2", label: "Our brands", href: "/brands", isExternal: false, visible: true, order: 2 },
-          { id: "f3", label: "Product catalogue", href: "/products", isExternal: false, visible: true, order: 3 },
-          { id: "f4", label: "Capabilities", href: "/capabilities", isExternal: false, visible: true, order: 4 },
-          { id: "f5", label: "Contact & Inquiries", href: "/contact", isExternal: false, visible: true, order: 5 },
-          { id: "f6", label: "Privacy policy", href: "/privacy", isExternal: false, visible: true, order: 6 },
-        ];
-
-  const validFooterNav = footerNavItems
-    .filter((item) => item.visible)
-    .sort((a, b) => a.order - b.order);
+  const navLinks = [
+    { label: "About", href: "/about" },
+    { label: "Brands", href: "/brands" },
+    { label: "Products", href: "/products" },
+    { label: "Associates", href: "/associates" },
+    { label: "Contact", href: "/contact" },
+  ];
 
   return (
-    <>
-      <a className="skip" href="#main">
-        Skip to content
+    <div className="site-shell">
+      <ScrollProgress />
+
+      <a className="skip-to-content-link" href="#main-content">
+        Skip to main content
       </a>
 
-      {previewBannerText ? (
-        <div className="preview-indicator-bar" role="status">
-          <strong>PREVIEW MODE</strong> · {previewBannerText}
-        </div>
-      ) : demo ? (
-        <div className="demo-strip">
-          Design preview · Company details and brand names are illustrative.{" "}
-          <Link href="/admin">
-            Explore admin <ArrowUpRight size={13} />
+      {/* Primary Site Header: Mack Knit Wear */}
+      <header className="site-header" role="banner">
+        <div className="header-container">
+          <Link href="/" className="header-brand-link" aria-label="Mack Knit Wear Home">
+            <span className="wordmark">
+              <span className="wordmark-monogram" aria-hidden="true">
+                M
+              </span>
+              <span className="wordmark-text-wrap">
+                <span className="wordmark-title">Mack Knit Wear</span>
+                <span className="wordmark-tagline">DHAKA · TEXTILES</span>
+              </span>
+            </span>
           </Link>
-        </div>
-      ) : null}
 
-      <header className="site-header">
-        <Link href="/" aria-label={`${settings.title} home`}>
-          <Logo
-            name={settings.title}
-            tagline={settings.logoTagline}
-            image={settings.image}
-            alt={settings.imageAlt}
-          />
-        </Link>
-
-        {/* Desktop Navigation */}
-        <nav aria-label="Main navigation" className="desktop-nav-wrap">
-          {validHeaderNav.map((item) => {
-            const isActive =
-              item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-            return item.isExternal ? (
-              <a
-                key={item.id}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nav-link"
-              >
-                {item.label} <ExternalLink size={13} />
-              </a>
-            ) : (
-              <Link
-                key={item.id}
-                href={item.href}
-                className={`nav-link ${isActive ? "active" : ""}`}
-                aria-current={isActive ? "page" : undefined}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <Link href="/contact" className="button small dark desktop-contact">
-          Let’s talk <ArrowUpRight size={16} />
-        </Link>
-
-        {/* Mobile Navigation Trigger */}
-        <div className="mobile-nav-container">
-          <button
-            type="button"
-            className="mobile-nav-toggle-btn"
-            aria-expanded={mobileMenuOpen}
-            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-
-          {mobileMenuOpen && (
-            <div className="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Mobile menu">
-              <nav aria-label="Mobile navigation">
-                {validHeaderNav.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className="mobile-nav-link"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+          {/* Desktop Navigation */}
+          <nav className="desktop-nav" aria-label="Main Navigation">
+            {navLinks.map((item) => {
+              const isActive =
+                item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              return (
                 <Link
-                  href="/contact"
-                  className="mobile-nav-link highlight"
-                  onClick={() => setMobileMenuOpen(false)}
+                  key={item.href}
+                  href={item.href}
+                  className={`nav-item ${isActive ? "active" : ""}`}
+                  aria-current={isActive ? "page" : undefined}
                 >
-                  Contact & Inquiries
+                  {item.label}
                 </Link>
-              </nav>
-            </div>
-          )}
+              );
+            })}
+          </nav>
+
+          {/* Contact Action */}
+          <div className="header-cta-wrap">
+            <Link href="/contact" className="button contact-cta-btn">
+              Let’s talk <ArrowUpRight size={15} />
+            </Link>
+
+            {/* Mobile Menu Trigger */}
+            <button
+              ref={toggleBtnRef}
+              type="button"
+              className="mobile-nav-toggle"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation-drawer"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
         </div>
       </header>
 
-      <main id="main">{children}</main>
-
-      <footer className="site-footer">
-        <div>
-          <Logo
-            name={settings.title}
-            tagline={settings.logoTagline}
-            image={settings.image}
-            alt={settings.imageAlt}
-          />
-          <p>{settings.footer}</p>
-          {settings.address && <p className="footer-address">{settings.address}</p>}
-        </div>
-
-        <div>
-          <span className="eyebrow">NAVIGATION</span>
-          {validFooterNav.map((item) =>
-            item.isExternal ? (
-              <a
-                key={item.id}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {item.label} ↗
-              </a>
-            ) : (
-              <Link key={item.id} href={item.href}>
-                {item.label}
+      {/* Secondary Navigation on londonBoy Routes */}
+      {isLondonBoyRoute && (
+        <nav
+          className="londonboy-subnav-bar"
+          aria-label="londonBoy Brand Navigation"
+        >
+          <div className="subnav-container">
+            <div className="subnav-brand-side">
+              <Link href="/brands/londonboy" className="subnav-wordmark">
+                <strong>londonBoy</strong>
+                <span className="subnav-badge">Signature Brand</span>
               </Link>
-            ),
-          )}
+            </div>
+
+            <div className="subnav-links-side">
+              <Link
+                href="/brands/londonboy"
+                className={`subnav-link ${
+                  pathname === "/brands/londonboy" ? "active" : ""
+                }`}
+              >
+                Overview
+              </Link>
+              <Link
+                href="/brands/londonboy/socks"
+                className={`subnav-link ${
+                  pathname === "/brands/londonboy/socks" ? "active" : ""
+                }`}
+              >
+                Socks
+              </Link>
+              <Link
+                href="/brands/londonboy/innerwear"
+                className={`subnav-link ${
+                  pathname === "/brands/londonboy/innerwear" ? "active" : ""
+                }`}
+              >
+                Innerwear
+              </Link>
+              <Link
+                href="/products?brand=londonBoy"
+                className="subnav-link"
+              >
+                All Products
+              </Link>
+
+              <span className="subnav-sep" aria-hidden="true">|</span>
+
+              <Link href="/" className="subnav-return-link">
+                <ArrowLeft size={13} /> Back to Mack
+              </Link>
+            </div>
+          </div>
+        </nav>
+      )}
+
+      {/* Mobile Menu Drawer */}
+      {mobileMenuOpen && (
+        <div
+          id="mobile-navigation-drawer"
+          ref={menuDrawerRef}
+          className="mobile-menu-drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Site navigation"
+        >
+          <div className="drawer-inner">
+            <div className="drawer-header">
+              <span className="drawer-title">Navigation</span>
+              <button
+                type="button"
+                className="drawer-close-btn"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close navigation"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            <nav className="mobile-nav-list" aria-label="Mobile Navigation List">
+              <Link
+                href="/"
+                className={`mobile-nav-item ${pathname === "/" ? "active" : ""}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Home
+              </Link>
+              {navLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`mobile-nav-item ${
+                    pathname.startsWith(item.href) ? "active" : ""
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+
+              <div className="mobile-nav-divider" />
+
+              <span className="mobile-subhead">SIGNATURE BRAND</span>
+              <Link
+                href="/brands/londonboy"
+                className="mobile-nav-item special-brand-item"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                londonBoy Overview
+              </Link>
+              <Link
+                href="/brands/londonboy/socks"
+                className="mobile-nav-subitem"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                ↳ londonBoy Socks
+              </Link>
+              <Link
+                href="/brands/londonboy/innerwear"
+                className="mobile-nav-subitem"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                ↳ londonBoy Innerwear
+              </Link>
+            </nav>
+
+            <div className="drawer-footer">
+              <Link
+                href="/contact"
+                className="button primary-dark mobile-contact-btn"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contact Trade Desk <ArrowUpRight size={16} />
+              </Link>
+              <p className="drawer-footnote">
+                Dhaka, Bangladesh · inquiries@mackknitwear.com
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Page Content */}
+      <main id="main-content" className="site-main-content">
+        {children}
+      </main>
+
+      {/* Site Editorial Footer */}
+      <footer className="site-footer" role="contentinfo">
+        <div className="section-container footer-grid">
+          <div className="footer-brand-col">
+            <span className="footer-wordmark">Mack Knit Wear</span>
+            <p className="footer-motto">
+              A composed textile portfolio and brand incubator based in Dhaka, Bangladesh.
+            </p>
+            <div className="footer-meta-info">
+              <span>Direct: inquiries@mackknitwear.com</span>
+              <span>Phone: +880 2 887 8100</span>
+            </div>
+          </div>
+
+          <div className="footer-nav-col">
+            <span className="footer-col-title">NAVIGATION</span>
+            <ul className="footer-link-list">
+              <li><Link href="/about">About Us</Link></li>
+              <li><Link href="/brands">Brands Portfolio</Link></li>
+              <li><Link href="/products">Product Catalogue</Link></li>
+              <li><Link href="/associates">Industrial Associates</Link></li>
+              <li><Link href="/contact">Commercial Correspondence</Link></li>
+            </ul>
+          </div>
+
+          <div className="footer-nav-col">
+            <span className="footer-col-title">SIGNATURE BRAND</span>
+            <ul className="footer-link-list">
+              <li><Link href="/brands/londonboy">londonBoy Overview</Link></li>
+              <li><Link href="/brands/londonboy/socks">Socks Line</Link></li>
+              <li><Link href="/brands/londonboy/innerwear">Innerwear Line</Link></li>
+              <li><Link href="/contact?brand=londonBoy">Wholesale Sourcing</Link></li>
+            </ul>
+          </div>
+
+          <div className="footer-nav-col">
+            <span className="footer-col-title">GOVERNANCE</span>
+            <ul className="footer-link-list">
+              <li><Link href="/privacy">Commercial Confidentiality</Link></li>
+              <li><Link href="/contact?type=Factory%20verification">Associate Verification</Link></li>
+            </ul>
+            <div className="footer-note-box">
+              <span>Dhaka, Bangladesh</span>
+              <small>All specifications derived from confirmed production.</small>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <span className="eyebrow">CONNECT</span>
-          {settings.email && (
-            <a href={`mailto:${settings.email}`}>{settings.email}</a>
-          )}
-          {settings.phone && (
-            <a href={`tel:${settings.phone.replace(/[^+\d]/g, "")}`}>{settings.phone}</a>
-          )}
-          {settings.linkedin && (
-            <a
-              href={settings.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              LinkedIn ↗
-            </a>
-          )}
-          {settings.facebook && (
-            <a
-              href={settings.facebook}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Facebook ↗
-            </a>
-          )}
-          {settings.responsePromise && (
-            <small className="muted response-promise-note">{settings.responsePromise}</small>
-          )}
-        </div>
-
-        <div className="footer-bottom">
-          <span>
-            © {new Date().getFullYear()} {settings.title}
-          </span>
-          <span>{settings.footerNote}</span>
+        <div className="section-container footer-bottom-bar">
+          <p className="copyright-text">
+            © {new Date().getFullYear()} Mack Knit Wear. All rights reserved.
+          </p>
+          <div className="footer-bottom-links">
+            <Link href="/privacy">Privacy Notice</Link>
+            <span>·</span>
+            <Link href="/contact">Trade Desk</Link>
+          </div>
         </div>
       </footer>
-    </>
+    </div>
   );
 }
