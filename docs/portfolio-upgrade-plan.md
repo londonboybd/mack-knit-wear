@@ -1,6 +1,7 @@
-# Mack Knit Wear — Portfolio Functional Upgrade Plan
+# [SUPERSEDED] Mack Knit Wear — Portfolio Functional Upgrade Plan
 
-## 1. Executive Summary & Architecture Strategy
+> [!WARNING]
+> **SUPERSEDED ARCHITECTURE DOCUMENT**: As of September 2026, Mack Knit Wear has transitioned to a Git-backed, code-driven content model. The Supabase database, admin panel, dynamic publishing workflows, and server-side inquiry queues documented here have been decommissioned. Please refer to `README.md` and `mack-knit-wear-setup-guide.md` for current documentation.
 
 This plan outlines the complete functional upgrade of the Mack Knit Wear corporate portfolio application. The project builds upon the existing Next.js App Router, TypeScript, Supabase PostgreSQL, and Zod foundation without replacing the stack or introducing external CMS platforms.
 

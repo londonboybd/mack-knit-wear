@@ -7,50 +7,38 @@ import {
   ArrowUpRight,
   Maximize2,
   X,
-  Layers,
   ChevronLeft,
   ChevronRight,
-  CheckCircle,
 } from "lucide-react";
-import type { Content, RecordItem, GalleryItem } from "@/lib/schema";
-import { ProductCarousel } from "./product-carousel";
+import type { Product, ProductGalleryItem } from "@/lib/data/types";
+import { getRelatedProducts } from "@/lib/data/selectors";
+import { SectionReveal, StaggerGroup } from "./motion";
 
-export function ProductDetail({
-  product,
-  allRecords = [],
-}: {
-  product: RecordItem;
-  allRecords?: RecordItem[];
-}) {
-  const content = product.published || product.draft;
+interface ProductDetailProps {
+  product: Product;
+}
 
-  // Resolve brand if assigned
-  const brand = allRecords.find(
-    (r) => r.kind === "brand" && r.id === content.brandId && r.published,
-  );
-  const brandContent = brand ? (brand.published || brand.draft) : null;
+export function ProductDetail({ product }: ProductDetailProps) {
+  // Related products
+  const relatedProducts = getRelatedProducts(product, 2);
 
-  // Compile image gallery (main image + gallery items)
-  const allImages: GalleryItem[] = [];
-  if (content.image) {
+  // Compile image gallery
+  const allImages: ProductGalleryItem[] = [];
+  if (product.gallery && product.gallery.length > 0) {
+    allImages.push(...product.gallery);
+  } else {
     allImages.push({
-      id: "main-photo",
-      image: content.image,
-      alt: content.imageAlt || content.title,
-      caption: content.title,
+      image: product.image,
+      alt: product.imageAlt || product.name,
+      caption: product.name,
     });
-  }
-  if (content.gallery && content.gallery.length > 0) {
-    content.gallery.forEach((g, idx) => {
-      if (g.image) {
-        allImages.push({
-          id: g.id || `gallery-${idx}`,
-          image: g.image,
-          alt: g.alt || `${content.title} photograph ${idx + 1}`,
-          caption: g.caption || "",
-        });
-      }
-    });
+    if (product.secondaryImage && product.secondaryImage !== product.image) {
+      allImages.push({
+        image: product.secondaryImage,
+        alt: `${product.name} detail view`,
+        caption: "Secondary View",
+      });
+    }
   }
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -58,321 +46,269 @@ export function ProductDetail({
   const triggerButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Accessible lightbox keyboard navigation (Escape to close, Left/Right arrow to cycle)
+  const activeImage = allImages[activeImageIndex] || allImages[0];
+
+  // Handle lightbox keyboard navigation
   useEffect(() => {
-    if (!lightboxOpen) return;
-
-    // Focus the close button when lightbox opens
-    closeButtonRef.current?.focus();
-
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!lightboxOpen) return;
       if (e.key === "Escape") {
         setLightboxOpen(false);
         triggerButtonRef.current?.focus();
-      } else if (e.key === "ArrowLeft") {
-        setActiveImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
       } else if (e.key === "ArrowRight") {
         setActiveImageIndex((prev) => (prev + 1) % allImages.length);
+      } else if (e.key === "ArrowLeft") {
+        setActiveImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
       }
     };
 
+    if (lightboxOpen) {
+      document.body.style.overflow = "hidden";
+      setTimeout(() => closeButtonRef.current?.focus(), 50);
+    } else {
+      document.body.style.overflow = "";
+    }
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
   }, [lightboxOpen, allImages.length]);
 
-  const activeImage = allImages[activeImageIndex] || allImages[0];
-
-  // Resolve related products in the same category or brand
-  const relatedProducts = allRecords.filter(
-    (r) =>
-      r.kind === "product" &&
-      r.id !== product.id &&
-      r.published &&
-      ((r.published.category && r.published.category === content.category) ||
-        (content.brandId && r.published.brandId === content.brandId)),
-  );
-
   return (
-    <article className="product-detail-page">
+    <div className="product-detail-page">
       {/* Breadcrumb Navigation */}
-      <nav className="breadcrumb" aria-label="Breadcrumb">
-        <Link href="/products">Product catalogue</Link>
-        <span aria-hidden="true">/</span>
-        {content.category && (
-          <>
-            <Link href={`/products?category=${encodeURIComponent(content.category)}`}>
-              {content.category}
-            </Link>
-            <span aria-hidden="true">/</span>
-          </>
-        )}
-        <span aria-current="page">{content.title}</span>
+      <nav className="product-breadcrumb-nav" aria-label="Breadcrumb">
+        <div className="section-container">
+          <ol className="breadcrumb-list">
+            <li>
+              <Link href="/products">Product catalogue</Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li>
+              <Link href={`/brands/${product.brand.toLowerCase()}/${product.categorySlug}`}>
+                {product.category}
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li aria-current="page" className="active-crumb">
+              {product.name}
+            </li>
+          </ol>
+        </div>
       </nav>
 
-      <div className="product-overview-layout">
-        {/* Gallery Column */}
-        <section className="product-visuals-col" aria-label="Product photography">
-          <div className="product-main-display">
-            {activeImage?.image ? (
-              <div className="main-image-wrap">
-                <img
-                  src={activeImage.image}
-                  alt={activeImage.alt}
-                  fetchPriority="high"
-                />
-                <button
-                  type="button"
-                  ref={triggerButtonRef}
-                  className="enlarge-image-btn"
-                  onClick={() => setLightboxOpen(true)}
-                  aria-label="Enlarge image view"
-                  title="View enlarged photograph"
-                >
-                  <Maximize2 size={16} /> Enlarge
-                </button>
+      {/* Main Product Overview */}
+      <section className="product-overview-section" aria-label="Product Specifications">
+        <div className="section-container product-overview-layout">
+          {/* Left Column: Visuals & Gallery */}
+          <div className="product-visuals-col">
+            <div className="main-image-wrap">
+              {/* Short image crossfade on gallery changes */}
+              <img
+                key={activeImage.image}
+                src={activeImage.image}
+                alt={activeImage.alt || product.name}
+                className="main-display-img gallery-crossfade-img"
+              />
+              <button
+                ref={triggerButtonRef}
+                type="button"
+                className="enlarge-image-btn"
+                onClick={() => setLightboxOpen(true)}
+                aria-label={`Enlarge ${activeImage.caption || product.name}`}
+              >
+                <Maximize2 size={16} /> Enlarge
+              </button>
+            </div>
+
+            {/* Thumbnail Strip (if multiple images) */}
+            {allImages.length > 1 && (
+              <div
+                className="product-thumbnails-strip"
+                role="tablist"
+                aria-label="Product Image Views"
+              >
+                {allImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeImageIndex === idx}
+                    className={`thumbnail-btn ${
+                      activeImageIndex === idx ? "selected" : ""
+                    }`}
+                    onClick={() => setActiveImageIndex(idx)}
+                    aria-label={`View photo ${idx + 1}: ${img.caption || ""}`}
+                  >
+                    <img src={img.image} alt="" aria-hidden="true" />
+                  </button>
+                ))}
               </div>
-            ) : (
-              <div className="product-main-placeholder">
-                <Layers size={64} />
-              </div>
-            )}
-            {activeImage?.caption && (
-              <p className="image-caption-note">{activeImage.caption}</p>
             )}
           </div>
 
-          {/* Thumbnail Gallery */}
-          {allImages.length > 1 && (
-            <div className="product-thumbnails-strip" role="tablist" aria-label="Thumbnail gallery">
-              {allImages.map((img, idx) => (
-                <button
-                  type="button"
-                  key={img.id || idx}
-                  role="tab"
-                  aria-selected={idx === activeImageIndex}
-                  aria-label={`Show image ${idx + 1}: ${img.alt}`}
-                  className={`thumbnail-btn ${idx === activeImageIndex ? "selected" : ""}`}
-                  onClick={() => setActiveImageIndex(idx)}
-                >
-                  <img src={img.image} alt="" />
-                </button>
-              ))}
+          {/* Right Column: Information & Specifications */}
+          <div className="product-info-col">
+            <div className="product-meta-header">
+              <span className="card-cat-name">{product.category}</span>
+              <span className="ref-code-tag">REF: {product.refCode}</span>
             </div>
-          )}
-        </section>
 
-        {/* Specifications & Details Column */}
-        <section className="product-info-col">
-          <div className="product-meta-header">
-            {brand && brandContent ? (
-              <Link href={`/brands/${brand.slug}`} className="brand-affiliation-badge">
-                {brandContent.title}
+            <h1 className="product-primary-title">{product.name}</h1>
+
+            <p className="product-summary large-copy">{product.summary}</p>
+
+            {/* Commercial Action Box */}
+            <div className="product-cta-box">
+              <Link
+                href={`/contact?brand=${encodeURIComponent(
+                  product.brand
+                )}&product=${encodeURIComponent(
+                  product.name
+                )}&sku=${encodeURIComponent(product.refCode)}`}
+                className="button primary-dark"
+              >
+                Inquire about this product <ArrowRight size={16} />
               </Link>
-            ) : (
-              <span className="eyebrow">{content.category || "KNITWEAR"}</span>
-            )}
-            {content.refCode && <span className="ref-code-tag">REF: {content.refCode}</span>}
-          </div>
-
-          <h1 className="product-primary-title">{content.title}</h1>
-
-          {content.summary && <p className="large-copy">{content.summary}</p>}
-
-          {/* Inquiry Action Bar */}
-          <div className="product-cta-box">
-            <Link
-              href={`/contact?product=${encodeURIComponent(content.title)}&sku=${encodeURIComponent(content.refCode || "")}&brand=${encodeURIComponent(brandContent?.title || "")}&type=Wholesale`}
-              className="button dark"
-            >
-              Inquire about this product <ArrowRight size={17} />
-            </Link>
-            <span className="cta-assurance">Direct response from our Dhaka production desk</span>
-          </div>
-
-          {/* Materials & Composition */}
-          {content.materials && (
-            <div className="product-spec-block">
-              <h3>Materials & Composition</h3>
-              <p>{content.materials}</p>
+              <span className="cta-assurance">
+                Direct trade correspondence with our Dhaka production desk.
+              </span>
             </div>
-          )}
 
-          {/* Available Sizes & Colors */}
-          {(content.sizes?.length > 0 || content.colors?.length > 0) && (
-            <div className="product-options-grid">
-              {content.sizes?.length > 0 && (
-                <div className="options-group">
-                  <h4>Available Sizes</h4>
-                  <div className="chips-row">
-                    {content.sizes.map((s) => (
-                      <span className="size-chip" key={s}>
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {content.colors?.length > 0 && (
-                <div className="options-group">
-                  <h4>Available Colourways</h4>
-                  <div className="chips-row">
-                    {content.colors.map((c) => (
-                      <span className="color-chip" key={c}>
-                        {c}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Description */}
-          {content.body && (
-            <div className="product-spec-block">
+            {/* Editorial Description */}
+            <div className="product-description-block">
               <h3>Description & Construction</h3>
-              <div className="prose">
-                {content.body.split("\n").filter(Boolean).map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
+              <p>{product.description}</p>
+            </div>
+
+            {/* Technical Specifications (Conditional Rendering) */}
+            {product.specifications && product.specifications.length > 0 && (
+              <div className="product-spec-block">
+                <h3>Technical Specifications</h3>
+                <dl className="specs-dl-grid">
+                  {product.specifications.map((spec, i) => (
+                    <div key={i} className="spec-row">
+                      <dt>{spec.label}</dt>
+                      <dd>{spec.value}</dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
-            </div>
-          )}
-
-          {/* Technical Specifications Table */}
-          {content.specifications && content.specifications.length > 0 && (
-            <div className="product-spec-block">
-              <h3>Structured Specifications</h3>
-              <dl className="specs-dl-grid">
-                {content.specifications.map((spec, idx) => (
-                  <div className="spec-row" key={idx}>
-                    <dt>{spec.label}</dt>
-                    <dd>{spec.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          )}
-
-          {/* Manufacturing Parameters (MOQ & Lead Time) */}
-          {(content.moq || content.leadTime) && (
-            <div className="product-commercial-parameters">
-              {content.moq && (
-                <div className="param-item">
-                  <span className="param-label">Minimum Order Quantity (MOQ)</span>
-                  <strong>{content.moq}</strong>
-                </div>
-              )}
-              {content.leadTime && (
-                <div className="param-item">
-                  <span className="param-label">Estimated Lead Time</span>
-                  <strong>{content.leadTime}</strong>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Customization & Private Label */}
-          {content.customization && (
-            <div className="product-spec-block">
-              <h3>Private Label & Customization</h3>
-              <p>{content.customization}</p>
-            </div>
-          )}
-
-          {/* Intended Use */}
-          {content.intendedUse && (
-            <div className="product-spec-block">
-              <h3>Recommended Applications</h3>
-              <p>{content.intendedUse}</p>
-            </div>
-          )}
-        </section>
-      </div>
-
-      {/* Related Products Section */}
-      {relatedProducts.length > 0 && (
-        <section className="section related-products-section">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">RELATED PRODUCTS</span>
-              <h2>Complementary Knitwear</h2>
-            </div>
+            )}
           </div>
-          <ProductCarousel products={relatedProducts} title="Related Products" />
+        </div>
+      </section>
+
+      {/* Related Products from same category */}
+      {relatedProducts.length > 0 && (
+        <section className="related-products-section" aria-label="Related Styles">
+          <div className="section-container">
+            <SectionReveal delay={40}>
+              <div className="related-header">
+                <h2 className="related-title">
+                  Related {product.category} Styles
+                </h2>
+                <Link
+                  href={`/products?category=${product.categorySlug}`}
+                  className="view-category-link"
+                >
+                  View all {product.category.toLowerCase()} <ArrowRight size={14} />
+                </Link>
+              </div>
+            </SectionReveal>
+
+            <StaggerGroup staggerInterval={60} className="related-grid">
+              {relatedProducts.map((rel) => (
+                <article key={rel.id} className="related-product-card">
+                  <div className="related-card-img-wrap">
+                    <img src={rel.image} alt={rel.imageAlt} loading="lazy" />
+                    <span className="card-badge-code">{rel.refCode}</span>
+                  </div>
+                  <div className="related-card-info">
+                    <h3>
+                      <Link href={`/products/${rel.slug}`}>{rel.name}</Link>
+                    </h3>
+                    <p>{rel.summary}</p>
+                    <Link
+                      href={`/products/${rel.slug}`}
+                      className="related-action-link"
+                    >
+                      View style <ArrowUpRight size={14} />
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </StaggerGroup>
+          </div>
         </section>
       )}
 
-      {/* Accessible Lightbox Modal */}
+      {/* Lightbox Modal */}
       {lightboxOpen && (
         <div
           className="lightbox-overlay"
           role="dialog"
           aria-modal="true"
-          aria-label={`Enlarged view: ${activeImage?.alt}`}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setLightboxOpen(false);
-              triggerButtonRef.current?.focus();
-            }
-          }}
+          aria-label="Image Lightbox"
         >
-          <div className="lightbox-content-box">
-            <div className="lightbox-top-bar">
-              <span className="lightbox-counter">
-                {activeImageIndex + 1} of {allImages.length}
-              </span>
-              <button
-                type="button"
-                ref={closeButtonRef}
-                className="lightbox-close-btn"
-                onClick={() => {
-                  setLightboxOpen(false);
-                  triggerButtonRef.current?.focus();
-                }}
-                aria-label="Close enlarged photograph view"
-              >
-                <X size={22} />
-              </button>
+          <div className="lightbox-backdrop" onClick={() => setLightboxOpen(false)} />
+          <div className="lightbox-container">
+            <button
+              ref={closeButtonRef}
+              type="button"
+              className="lightbox-close-btn"
+              onClick={() => setLightboxOpen(false)}
+              aria-label="Close lightbox"
+            >
+              <X size={24} />
+            </button>
+
+            <div className="lightbox-image-box">
+              <img
+                src={activeImage.image}
+                alt={activeImage.alt || product.name}
+              />
+              {activeImage.caption && (
+                <div className="lightbox-caption">
+                  <span>{activeImage.caption}</span>
+                  <small>
+                    {activeImageIndex + 1} / {allImages.length}
+                  </small>
+                </div>
+              )}
             </div>
 
-            <div className="lightbox-main-image-wrap">
-              {allImages.length > 1 && (
+            {allImages.length > 1 && (
+              <div className="lightbox-nav-controls">
                 <button
                   type="button"
-                  className="lightbox-nav-btn prev"
+                  className="lightbox-prev-btn"
                   onClick={() =>
-                    setActiveImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length)
+                    setActiveImageIndex(
+                      (prev) => (prev - 1 + allImages.length) % allImages.length
+                    )
                   }
-                  aria-label="Previous photograph"
+                  aria-label="Previous photo"
                 >
                   <ChevronLeft size={24} />
                 </button>
-              )}
-
-              <img src={activeImage?.image} alt={activeImage?.alt} />
-
-              {allImages.length > 1 && (
                 <button
                   type="button"
-                  className="lightbox-nav-btn next"
+                  className="lightbox-next-btn"
                   onClick={() =>
                     setActiveImageIndex((prev) => (prev + 1) % allImages.length)
                   }
-                  aria-label="Next photograph"
+                  aria-label="Next photo"
                 >
                   <ChevronRight size={24} />
                 </button>
-              )}
-            </div>
-
-            {activeImage?.caption && (
-              <p className="lightbox-caption">{activeImage.caption}</p>
+              </div>
             )}
           </div>
         </div>
       )}
-    </article>
+    </div>
   );
 }

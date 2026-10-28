@@ -4,31 +4,60 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { aboutContent } from "@/lib/data/site-data";
-import { ImageReveal, Reveal } from "./motion";
+import {
+  SectionReveal,
+  HeroEntrance,
+  ImageReveal,
+  InteractiveLink,
+} from "./motion";
 
 export function AboutJournal() {
   const [activeChapter, setActiveChapter] = useState(aboutContent.chapters[0].id);
 
+  // Efficient active chapter tracking using IntersectionObserver instead of continuous scroll handlers
   useEffect(() => {
-    const handleScroll = () => {
-      const chapterElements = aboutContent.chapters.map((ch) => ({
-        id: ch.id,
-        el: document.getElementById(`chapter-${ch.id}`),
-      }));
+    const chapterEls = aboutContent.chapters
+      .map((ch) => document.getElementById(`chapter-${ch.id}`))
+      .filter(Boolean) as HTMLElement[];
 
-      const scrollPosition = window.scrollY + 200;
+    if (chapterEls.length === 0) return;
 
-      for (let i = chapterElements.length - 1; i >= 0; i--) {
-        const item = chapterElements[i];
-        if (item.el && item.el.offsetTop <= scrollPosition) {
-          setActiveChapter(item.id);
-          break;
+    const visibleMap = new Map<string, number>();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.id.replace("chapter-", "");
+          if (entry.isIntersecting) {
+            visibleMap.set(id, entry.boundingClientRect.top);
+          } else {
+            visibleMap.delete(id);
+          }
+        });
+
+        if (visibleMap.size > 0) {
+          let closestId = "";
+          let closestDist = Infinity;
+          visibleMap.forEach((top, id) => {
+            const dist = Math.abs(top - 100);
+            if (dist < closestDist) {
+              closestDist = dist;
+              closestId = id;
+            }
+          });
+          if (closestId) {
+            setActiveChapter(closestId);
+          }
         }
+      },
+      {
+        rootMargin: "-80px 0px -40% 0px",
+        threshold: [0, 0.1, 0.5],
       }
-    };
+    );
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    chapterEls.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -36,22 +65,22 @@ export function AboutJournal() {
       {/* Editorial Header */}
       <section className="journal-header-section" aria-label="Journal Introduction">
         <div className="section-container">
-          <Reveal delay={50}>
+          <HeroEntrance delay={50}>
             <span className="hero-eyebrow">{aboutContent.eyebrow}</span>
-          </Reveal>
-          <Reveal delay={120}>
+          </HeroEntrance>
+          <HeroEntrance delay={110}>
             <h1 className="journal-title">{aboutContent.title}</h1>
-          </Reveal>
-          <Reveal delay={180}>
+          </HeroEntrance>
+          <HeroEntrance delay={170}>
             <p className="journal-intro-text">{aboutContent.intro}</p>
-          </Reveal>
+          </HeroEntrance>
         </div>
       </section>
 
       {/* Main Journal Reading Layout */}
       <section className="journal-reading-section">
         <div className="section-container journal-grid">
-          {/* Desktop Sticky Chapter Index / Mobile Anchors */}
+          {/* Desktop Sticky Chapter Index */}
           <aside className="journal-index-col" aria-label="Table of Contents">
             <div className="sticky-index-box">
               <span className="index-title">INDEX</span>
@@ -87,58 +116,85 @@ export function AboutJournal() {
           </aside>
 
           {/* Reading Column */}
-          <main className="journal-content-col">
+          <div className="journal-content-col">
+            {/* Simple, readable mobile chapter chip navigation */}
+            <nav className="mobile-chapter-nav" aria-label="Quick Chapters Navigation">
+              {aboutContent.chapters.map((ch) => {
+                const isActive = activeChapter === ch.id;
+                return (
+                  <a
+                    key={ch.id}
+                    href={`#chapter-${ch.id}`}
+                    className={`mobile-chapter-chip ${isActive ? "active" : ""}`}
+                    aria-current={isActive ? "location" : undefined}
+                    onClick={() => setActiveChapter(ch.id)}
+                  >
+                    <span>{ch.number}</span>
+                    <span>{ch.title}</span>
+                  </a>
+                );
+              })}
+            </nav>
+
             {aboutContent.chapters.map((ch, idx) => (
-              <article
+              <SectionReveal
                 key={ch.id}
-                id={`chapter-${ch.id}`}
-                className="journal-chapter-block"
-                aria-labelledby={`heading-${ch.id}`}
+                delay={idx === 0 ? 40 : 60}
+                className="journal-chapter-wrapper"
               >
-                <div className="chapter-marker-row">
-                  <span className="chapter-badge">CHAPTER {ch.number}</span>
-                  <div className="chapter-divider-line" />
-                </div>
-
-                <h2 id={`heading-${ch.id}`} className="chapter-heading">
-                  {ch.title}
-                </h2>
-
-                <div className="chapter-prose">
-                  {ch.content.map((paragraph, pIdx) => (
-                    <p key={pIdx}>{paragraph}</p>
-                  ))}
-                </div>
-
-                {/* Offset Image after Chapter 01 */}
-                {idx === 0 && (
-                  <div className="journal-offset-image-wrap">
-                    <ImageReveal
-                      src={aboutContent.image}
-                      alt={aboutContent.imageAlt}
-                      aspectRatio="16/9"
-                      className="journal-detail-photo"
-                    />
-                    <div className="image-footnote">
-                      <span>Detail: Tactile knit structure & loop definition</span>
-                      <span className="footnote-tag">Dhaka Studio</span>
-                    </div>
+                <article
+                  id={`chapter-${ch.id}`}
+                  className="journal-chapter-block"
+                  aria-labelledby={`heading-${ch.id}`}
+                >
+                  <div className="chapter-marker-row">
+                    <span className="chapter-badge">CHAPTER {ch.number}</span>
+                    <div className="chapter-divider-line" />
                   </div>
-                )}
-              </article>
+
+                  <h2 id={`heading-${ch.id}`} className="chapter-heading">
+                    {ch.title}
+                  </h2>
+
+                  <div className="chapter-prose">
+                    {ch.content.map((paragraph, pIdx) => (
+                      <p key={pIdx}>{paragraph}</p>
+                    ))}
+                  </div>
+
+                  {/* Offset Image after Chapter 01 */}
+                  {idx === 0 && (
+                    <div className="journal-offset-image-wrap">
+                      <ImageReveal
+                        src={aboutContent.image}
+                        alt={aboutContent.imageAlt}
+                        aspectRatio="16/9"
+                        className="journal-detail-photo"
+                        delay={80}
+                      />
+                      <div className="image-footnote">
+                        <span>Detail: Tactile knit structure & loop definition</span>
+                        <span className="footnote-tag">Dhaka Studio</span>
+                      </div>
+                    </div>
+                  )}
+                </article>
+              </SectionReveal>
             ))}
 
             {/* Closing Editorial Note */}
-            <div className="journal-end-note">
-              <span className="end-symbol">—</span>
-              <p>
-                Mack Knit Wear is registered in Dhaka, Bangladesh. For trade inquiries, wholesale access to londonBoy, or associate manufacturing verification, please reach out to our corporate desk.
-              </p>
-              <Link href="/contact" className="button primary-dark">
-                Contact the trade desk <ArrowUpRight size={16} />
-              </Link>
-            </div>
-          </main>
+            <SectionReveal delay={60}>
+              <div className="journal-end-note">
+                <span className="end-symbol">—</span>
+                <p>
+                  Mack Knit Wear is registered in Dhaka, Bangladesh. For trade inquiries, wholesale access to londonBoy, or associate manufacturing verification, please reach out to our corporate desk.
+                </p>
+                <Link href="/contact" className="button primary-dark">
+                  Contact the trade desk <ArrowUpRight size={16} />
+                </Link>
+              </div>
+            </SectionReveal>
+          </div>
         </div>
       </section>
     </div>

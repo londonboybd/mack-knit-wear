@@ -3,23 +3,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, ArrowLeft, Menu, X, ExternalLink } from "lucide-react";
+import { ArrowUpRight, ArrowLeft, Menu, X } from "lucide-react";
 import { siteSettings } from "@/lib/data/site-data";
 import { ScrollProgress } from "./motion";
 
-export function PublicShell({
-  children,
-  settings,
-  records,
-  demo,
-  previewBannerText,
-}: {
+interface PublicShellProps {
   children: React.ReactNode;
-  settings?: any;
-  records?: any;
-  demo?: boolean;
-  previewBannerText?: string;
-}) {
+}
+
+export function PublicShell({ children }: PublicShellProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const toggleBtnRef = useRef<HTMLButtonElement>(null);
@@ -59,13 +51,7 @@ export function PublicShell({
     };
   }, [mobileMenuOpen]);
 
-  const navLinks = [
-    { label: "About", href: "/about" },
-    { label: "Brands", href: "/brands" },
-    { label: "Products", href: "/products" },
-    { label: "Associates", href: "/associates" },
-    { label: "Contact", href: "/contact" },
-  ];
+  const navLinks = siteSettings.headerNav;
 
   return (
     <div className="site-shell">
@@ -265,14 +251,14 @@ export function PublicShell({
                 Contact Trade Desk <ArrowUpRight size={16} />
               </Link>
               <p className="drawer-footnote">
-                Dhaka, Bangladesh · inquiries@mackknitwear.com
+                {siteSettings.address} · {siteSettings.email}
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Main Page Content */}
+      {/* Main Landmark: Only single <main> on page */}
       <main id="main-content" className="site-main-content">
         {children}
       </main>
@@ -281,13 +267,11 @@ export function PublicShell({
       <footer className="site-footer" role="contentinfo">
         <div className="section-container footer-grid">
           <div className="footer-brand-col">
-            <span className="footer-wordmark">Mack Knit Wear</span>
-            <p className="footer-motto">
-              A composed textile portfolio and brand incubator based in Dhaka, Bangladesh.
-            </p>
+            <span className="footer-wordmark">{siteSettings.companyName}</span>
+            <p className="footer-motto">{siteSettings.description}</p>
             <div className="footer-meta-info">
-              <span>Direct: inquiries@mackknitwear.com</span>
-              <span>Phone: +880 2 887 8100</span>
+              {siteSettings.email && <span>Direct: {siteSettings.email}</span>}
+              {siteSettings.phone && <span>Phone: {siteSettings.phone}</span>}
             </div>
           </div>
 
@@ -316,10 +300,10 @@ export function PublicShell({
             <span className="footer-col-title">GOVERNANCE</span>
             <ul className="footer-link-list">
               <li><Link href="/privacy">Commercial Confidentiality</Link></li>
-              <li><Link href="/contact?type=Factory%20verification">Associate Verification</Link></li>
+              <li><Link href="/contact?type=Factory%20Verification">Associate Verification</Link></li>
             </ul>
             <div className="footer-note-box">
-              <span>Dhaka, Bangladesh</span>
+              <span>{siteSettings.address}</span>
               <small>All specifications derived from confirmed production.</small>
             </div>
           </div>
@@ -327,7 +311,7 @@ export function PublicShell({
 
         <div className="section-container footer-bottom-bar">
           <p className="copyright-text">
-            © {new Date().getFullYear()} Mack Knit Wear. All rights reserved.
+            © {new Date().getFullYear()} {siteSettings.companyName}. All rights reserved.
           </p>
           <div className="footer-bottom-links">
             <Link href="/privacy">Privacy Notice</Link>

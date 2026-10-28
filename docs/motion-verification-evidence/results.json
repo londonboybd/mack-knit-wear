@@ -1,0 +1,75 @@
+{
+  "heroImmediate": {
+    "h1Visible": true,
+    "btnVisible": true,
+    "hasImage": true,
+    "h1Text": "Everyday essentials.A distinct point of view."
+  },
+  "scrollProgress": {
+    "found": true,
+    "ariaHidden": "true",
+    "transform": "matrix(0.170823, 0, 0, 1, 0, 0)",
+    "transformOrigin": "0px 1px"
+  },
+  "boundedParallax": {
+    "found": true,
+    "overflowHidden": true,
+    "hasTransform": true
+  },
+  "stickyIndex": {
+    "position": "sticky",
+    "top": "96px"
+  },
+  "chapterScrollSwitching": {
+    "initial": "01",
+    "afterScroll": "03",
+    "switchedSuccessfully": true
+  },
+  "anchorMargin": {
+    "scrollMarginTop": "104px"
+  },
+  "socksSticky": {
+    "position": "sticky",
+    "top": "108px"
+  },
+  "railInitial": {
+    "scrollLeft": 0,
+    "scrollWidth": 1352,
+    "clientWidth": 1313,
+    "prevDisabled": true,
+    "nextDisabled": false,
+    "cardCount": 4
+  },
+  "railAfterNext": {
+    "scrollLeft": 39,
+    "prevDisabled": false,
+    "moved": true
+  },
+  "galleryCrossfade": {
+    "hasMultiple": true,
+    "animationName": "galleryFadeIn",
+    "src": "http://localhost:3000/images/knitwear.jpg"
+  },
+  "lightbox": {
+    "isOpen": true,
+    "isClosed": true
+  },
+  "mobileMenu": {
+    "isOpen": true,
+    "isClosed": true
+  },
+  "mobileChapterChips": {
+    "display": "flex",
+    "chipCount": 4,
+    "firstChipActive": true
+  },
+  "reducedMotion": {
+    "progressBarHidden": true,
+    "htmlScrollBehavior": "auto",
+    "socksVisualPosition": "static"
+  },
+  "noJsAudit": {
+    "hasNoscript": true,
+    "hasHeadingInHtml": true
+  }
+}

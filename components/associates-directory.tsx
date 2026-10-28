@@ -4,7 +4,11 @@ import React from "react";
 import Link from "next/link";
 import { ArrowUpRight, ExternalLink } from "lucide-react";
 import { associatesList } from "@/lib/data/site-data";
-import { Reveal } from "./motion";
+import {
+  SectionReveal,
+  HeroEntrance,
+  StaggerGroup,
+} from "./motion";
 
 export function AssociatesDirectory() {
   return (
@@ -12,37 +16,40 @@ export function AssociatesDirectory() {
       {/* Directory Editorial Header */}
       <section className="directory-header-section" aria-label="Industrial Directory Intro">
         <div className="section-container">
-          <Reveal delay={50}>
+          <HeroEntrance delay={50}>
             <span className="hero-eyebrow">ACCREDITED MANUFACTURING NETWORK</span>
-          </Reveal>
-          <Reveal delay={120}>
+          </HeroEntrance>
+          <HeroEntrance delay={110}>
             <h1 className="directory-title">
               Industrial Associates.
               <br />
               <span className="serif-accent">Collaborative capability in Bangladesh.</span>
             </h1>
-          </Reveal>
-          <Reveal delay={180}>
+          </HeroEntrance>
+          <HeroEntrance delay={170}>
             <p className="directory-intro-text">
               Mack Knit Wear collaborates directly with three independent, accredited manufacturing associates in Bangladesh. Each partner brings specialized production discipline across composite knitting, large-scale assembly, and precision garment finishing.
             </p>
-          </Reveal>
+          </HeroEntrance>
         </div>
       </section>
 
       {/* Directory Listing Section */}
       <section className="directory-list-section" aria-label="Industrial Associates Directory">
         <div className="section-container">
-          <div className="directory-table-head">
-            <span className="th-number">INDEX</span>
-            <span className="th-entity">ASSOCIATE ENTITY</span>
-            <span className="th-location">FACILITY LOCATION</span>
-            <span className="th-scope">MANUFACTURING SCOPE</span>
-            <span className="th-action">OFFICIAL LINK</span>
-          </div>
+          <SectionReveal delay={40}>
+            <div className="directory-table-head">
+              <span className="th-number">INDEX</span>
+              <span className="th-entity">ASSOCIATE ENTITY</span>
+              <span className="th-location">FACILITY LOCATION</span>
+              <span className="th-scope">MANUFACTURING SCOPE</span>
+              <span className="th-action">OFFICIAL LINK</span>
+            </div>
+          </SectionReveal>
 
-          <div className="directory-list-wrap">
-            {associatesList.map((assoc, idx) => (
+          {/* Subtle coordinated row entrances */}
+          <StaggerGroup staggerInterval={60} distance={12} className="directory-list-wrap">
+            {associatesList.map((assoc) => (
               <article
                 key={assoc.number}
                 className="associate-row-item"
@@ -97,22 +104,24 @@ export function AssociatesDirectory() {
                 </div>
               </article>
             ))}
-          </div>
+          </StaggerGroup>
 
           {/* Relationship Transparency Notice */}
-          <div className="directory-transparency-card">
-            <div className="transparency-content">
-              <h3>Governance & Partnership Integrity</h3>
-              <p>
-                Mack Knit Wear maintains direct contractual and technical collaboration with each named associate. We do not claim corporate ownership or exclusive production control over these independent facilities; relationships are founded on audited compliance, technical alignment, and reliable commercial execution.
-              </p>
+          <SectionReveal delay={60}>
+            <div className="directory-transparency-card">
+              <div className="transparency-content">
+                <h3>Governance & Partnership Integrity</h3>
+                <p>
+                  Mack Knit Wear maintains direct contractual and technical collaboration with each named associate. We do not claim corporate ownership or exclusive production control over these independent facilities; relationships are founded on audited compliance, technical alignment, and reliable commercial execution.
+                </p>
+              </div>
+              <div className="transparency-action">
+                <Link href="/contact?type=Factory%20verification" className="button secondary-quiet">
+                  Verify associate capacity <ArrowUpRight size={16} />
+                </Link>
+              </div>
             </div>
-            <div className="transparency-action">
-              <Link href="/contact?type=Factory%20verification" className="button secondary-quiet">
-                Verify associate capacity <ArrowUpRight size={16} />
-              </Link>
-            </div>
-          </div>
+          </SectionReveal>
         </div>
       </section>
     </div>
